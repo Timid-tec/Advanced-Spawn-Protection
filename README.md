@@ -1,3 +1,6 @@
+![Build Status](https://github.com/CrimsonTautology/sm-death-chance/workflows/Build%20plugins/badge.svg?style=flat-square)
+[![GitHub All Releases](https://img.shields.io/github/downloads/Timid-te/Advanced-Spawn-Protection/total.svg?style=flat-square&logo=github&logoColor=white)](https://github.com/CrimsonTautology/sm-death-chance/releases)
+
 # Advanced-Spawn-Protection
 
 A source mod plugin simply made to make spawn protection more user-friendly, With the idea in mind for it to be more reliable for the servers to run with the intention of fewer memory leaks.
