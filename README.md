@@ -1,4 +1,4 @@
-[![GitHub stars](https://img.shields.io/github/stars/CrimsonTautology/sm-death-chance?style=flat-square)](https://github.com/Timid-tec/Advanced-Spawn-Protection/stargazers)
+<p align="center"> [![GitHub stars](https://img.shields.io/github/stars/CrimsonTautology/sm-death-chance?style=flat-square)](https://github.com/Timid-tec/Advanced-Spawn-Protection/stargazers)
 [![GitHub All Releases](https://img.shields.io/github/downloads/CrimsonTautology/sm-death-chance/total.svg?style=flat-square&logo=github&logoColor=white)](https://github.com/Timid-tec/Advanced-Spawn-Protection/releases/tag/v4.2.0)
 
 # Advanced-Spawn-Protection
