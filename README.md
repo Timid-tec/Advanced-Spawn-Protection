@@ -14,6 +14,8 @@ A source mod plugin simply made to make spawn protection more user-friendly, Wit
 # Game Supported
 - CS:GO
 
+# 
+
 | Version | Change-Log          |
 | ------- | ------------------ |
 | 4.2.0   | Fixed Protected-Color to Green |
