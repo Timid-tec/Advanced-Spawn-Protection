@@ -1,4 +1,4 @@
-[![GitHub All Releases](https://img.shields.io/github/downloads/Timid-te/Advanced-Spawn-Protection/total.svg?style=flat-square&logo=github&logoColor=white)](https://github.com/CrimsonTautology/sm-death-chance/releases)
+[![GitHub All Releases](https://img.shields.io/github/downloads/Timid-te/Advanced-Spawn-Protection/total.svg?style=flat-square&logo=github&logoColor=white)](https://github.com/Timid-tec/Advanced-Spawn-Protection/releases/tag/v4.2.0)
 
 # Advanced-Spawn-Protection
 
