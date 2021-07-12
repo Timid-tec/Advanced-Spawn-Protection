@@ -13,11 +13,6 @@ A source mod plugin simply made to make spawn protection more user-friendly, Wit
 
 # Game Supported
 - CS:GO
-# 
-
-| Version | Change-Log          |
-| ------- | ------------------ |
-| 4.2.0   | Fixed Protected-Color to Green |
 
 # ConVars
 - sm_spawnprotect_time - Sets how much time is left for spawn protection default 14
@@ -38,10 +33,6 @@ A source mod plugin simply made to make spawn protection more user-friendly, Wit
 - Donwload AdvancedSpawnProtect.smx and put into /csgo/addons/sourcemod/plugins
 - Configure settings by editing /cfg/sourcemod/AdvancedSpawnProtection.cfg
 
-
-| Version | Supported          |
+| Version | Change-Log          |
 | ------- | ------------------ |
-| 5.1.x   | :white_check_mark: |
-| 5.0.x   | :x:                |
-| 4.0.x   | :white_check_mark: |
-| < 4.0   | :x:                |
+| 4.2.0   | Fixed Protected-Color to Green |
