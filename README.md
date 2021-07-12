@@ -33,6 +33,8 @@ A source mod plugin simply made to make spawn protection more user-friendly, Wit
 - Donwload AdvancedSpawnProtect.smx and put into /csgo/addons/sourcemod/plugins
 - Configure settings by editing /cfg/sourcemod/AdvancedSpawnProtection.cfg
 
+# Updates
+
 | Version | Change-Log          |
 | ------- | ------------------ |
 | 4.2.0   | Fixed Protected-Color to Green |
