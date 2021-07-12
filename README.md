@@ -25,3 +25,14 @@ A source mod plugin simply made to make spawn protection more user-friendly, Wit
     sm_spawnprotect_ffamode - Should we set colors for ffa or teams. (0 off, 1 on) default 1
     sm_spawnprotect_colormodels - Should we set colored player models. (0 off, 1 on) default 1
     sm_spawnprotect_endonattack - Should we disable spawn protect on attack. (0 off, 1 on) default 1
+
+# Commands
+- /rainbow default admin flag ADMFLAG_RCON - Allows the player models on spawn to go into a loop of R G B
+
+# Things to Add
+- Allow players to set custom spawn protect model highlighting color.
+
+# How to Install
+- Compile AdvancedSpawnProtect.sp
+  - Donwload AdvancedSpawnProtect.smx and put into /csgo/addons/sourcemod/plugins
+  - Configure settings by editing /cfg/sourcemod/AdvancedSpawnProtection.cfg
