@@ -7,7 +7,7 @@
 
 #define MSG_LENGTH 192
 #define PI 3.1415926535897932384626433832795
-#define PLUGIN_AUTHOR "Timid/cr88y"
+#define PLUGIN_AUTHOR "Timid"
 #define PLUGIN_VERSION "4.2.0"
 #define PREFIX "[SM]"
 
