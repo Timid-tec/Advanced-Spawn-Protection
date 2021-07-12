@@ -19,13 +19,13 @@ A source mod plugin simply made to make spawn protection more user-friendly, Wit
   - Fixed Protected-Color to Green
 
 # ConVars
-    sm_spawnprotect_time - Sets how much time is left for spawn protection default 14
-    sm_spawnprotect_rainbowhud - Sets whether rainbow menu is enabled. (0 off, 1 on) default 1
-    sm_spawnprotect_botcontrol - Should bots receive spawn protection if another player takes control of them. (0 off, 1 on) default 1
-    sm_spawnprotect_notifystart -Should we notify users that they have spawn protection. (0 off, 1 on) default 1
-    sm_spawnprotect_ffamode - Should we set colors for ffa or teams. (0 off, 1 on) default 1
-    sm_spawnprotect_colormodels - Should we set colored player models. (0 off, 1 on) default 1
-    sm_spawnprotect_endonattack - Should we disable spawn protect on attack. (0 off, 1 on) default 1
+   sm_spawnprotect_time - Sets how much time is left for spawn protection default 14
+   sm_spawnprotect_rainbowhud - Sets whether rainbow menu is enabled. (0 off, 1 on) default 1
+   sm_spawnprotect_botcontrol - Should bots receive spawn protection if another player takes control of them. (0 off, 1 on) default 1
+   sm_spawnprotect_notifystart -Should we notify users that they have spawn protection. (0 off, 1 on) default 1
+   sm_spawnprotect_ffamode - Should we set colors for ffa or teams. (0 off, 1 on) default 1
+   sm_spawnprotect_colormodels - Should we set colored player models. (0 off, 1 on) default 1
+   sm_spawnprotect_endonattack - Should we disable spawn protect on attack. (0 off, 1 on) default 1
 
 # Commands
 - /rainbow default admin flag ADMFLAG_RCON - Allows the player models on spawn to go into a loop of R G B
