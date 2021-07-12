@@ -15,7 +15,8 @@ A source mod plugin simply made to make spawn protection more user-friendly, Wit
 - CS:GO
 
 # Change-Log
-- None currently at the moment
+- Version 4.2.0
+  - Fixed Protected-Color to Green
 
 # ConVars
     sm_spawnprotect_time - Sets how much time is left for spawn protection default 14
