@@ -36,3 +36,11 @@ A source mod plugin simply made to make spawn protection more user-friendly, Wit
 # How to Install
 - Donwload AdvancedSpawnProtect.smx and put into /csgo/addons/sourcemod/plugins
 - Configure settings by editing /cfg/sourcemod/AdvancedSpawnProtection.cfg
+
+
+| Version | Supported          |
+| ------- | ------------------ |
+| 5.1.x   | :white_check_mark: |
+| 5.0.x   | :x:                |
+| 4.0.x   | :white_check_mark: |
+| < 4.0   | :x:                |
