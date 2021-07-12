@@ -1,3 +1,7 @@
+![Build Status](https://github.com/Timid-tec/Advanced-Spawn-Protection/workflows/Build%20plugins/badge.svg?style=flat-square)
+[![GitHub stars](https://img.shields.io/github/stars/Timid-tec/Advanced-Spawn-Protection?style=flat-square)](https://github.com/CrimsonTautology/sm-death-chance/stargazers)
+[![GitHub issues](https://img.shields.io/github/issues/Timid-tec/sm-death-chance.svg?style=flat-square&logo=github&logoColor=white)](https://github.com/Timid-tec/sAdvanced-Spawn-Protection/issues)
+[![GitHub pull requests](https://img.shields.io/github/issues-pr/CrimsonTautology/sm-death-chance.svg?style=flat-square&logo=github&logoColor=white)](https://github.com/CrimsonTautology/sm-death-chance/pulls)
 [![GitHub All Releases](https://img.shields.io/github/downloads/CrimsonTautology/sm-death-chance/total.svg?style=flat-square&logo=github&logoColor=white)](https://github.com/Timid-tec/Advanced-Spawn-Protection/releases/tag/v4.2.0)
 
 # Advanced-Spawn-Protection
