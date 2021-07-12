@@ -28,9 +28,6 @@ ConVar g_cvEndOnAttack;
 int g_iSPTime;
 int g_iSPTimeLeft[MAXPLAYERS + 1];
 
-//Handles
-Handle g_HudText;
-
 //Bool get true or false
 bool g_isEnabled;
 bool g_isBotControled;
@@ -104,7 +101,6 @@ public void OnPluginStart()
 	//Int Values
 	g_iSPTime = g_cvSPTime.IntValue;
 	
-	
 	//Bool Vlaues
 	g_isEnabled = g_cvRainbowEnabled.BoolValue;
 	g_isBotControled = g_cvBotControl.BoolValue;
@@ -115,9 +111,6 @@ public void OnPluginStart()
 	
 	//Find props
 	g_bIsControllingBot = FindSendPropInfo("CCSPlayer", "m_bIsControllingBot");
-	
-	//SyncHudText
-	g_HudText = CreateHudSynchronizer();
 	
 }
 //OnCVarChagned values
@@ -181,7 +174,7 @@ public Action CMD_OnRainbow(int client, int args)
 		return Plugin_Handled;
 	//if (!Redie_InDm(client))
 	//return Plugin_Handled;
-	CreateTimer(0.1, Timer_RainbowColor, client, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
+	CreateTimer(0.6, Timer_RainbowColor, client, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
 	g_rainbowenabled[client] = !g_rainbowenabled[client];
 	PrintToChat(client, "%s Rainbow model %s!", prefix, g_rainbowenabled[client] ? "enabled":"disabled");
 	return Plugin_Handled;
@@ -296,13 +289,11 @@ public Action Timer_SpawnProtection(Handle timer, int client)
 	
 	if (g_iSPTimeLeft[client] > 0)
 	{
-		ShowSyncHudText(client, g_HudText, "SPAWN PROTECTION\n%d seconds left", g_iSPTimeLeft[client]);
 		SetPlayerColor(client, g_ProtectedColor);
 		g_iSPTimeLeft[client] -= 1;
 	}
 	else if (g_iSPTimeLeft[client] <= 0)
 	{
-		ShowSyncHudText(client, g_HudText, "SPAWN PROTECTION\nis now off!");
 		if (g_isNotifyEnabled)
 			PrintToChat(client, "%s Spawn protection is now \x07OFF.", prefix);
 		SetEntProp(client, Prop_Data, "m_takedamage", 2, 1);
