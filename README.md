@@ -34,6 +34,5 @@ A source mod plugin simply made to make spawn protection more user-friendly, Wit
 - Allow players to set custom spawn protect model highlighting color.
 
 # How to Install
-- Compile AdvancedSpawnProtect.sp
 - Donwload AdvancedSpawnProtect.smx and put into /csgo/addons/sourcemod/plugins
 - Configure settings by editing /cfg/sourcemod/AdvancedSpawnProtection.cfg
