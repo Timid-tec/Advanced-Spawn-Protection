@@ -33,7 +33,7 @@
 
 bool g_rainbowenabled[MAXPLAYERS + 1] = false;
 
-//ConVars
+/* ConVars */
 ConVar g_cvSPTime;
 ConVar g_cvRainbowEnabled;
 ConVar g_cvBotControl;
@@ -42,11 +42,11 @@ ConVar g_cvTeamOrFFA;
 ConVar g_cvColorModels;
 ConVar g_cvEndOnAttack;
 
-//Int get 1++ value
+/* Int get 1++ value */
 int g_iSPTime;
 int g_iSPTimeLeft[MAXPLAYERS + 1];
 
-//Bool get true or false
+/* Bool get true or false */
 bool g_isEnabled;
 bool g_isBotControled;
 bool g_isNotifyEnabled;
@@ -55,11 +55,11 @@ bool g_isColorEnabled;
 bool g_isAttackEnabled;
 
 
-//Props
+/* Props */
 int g_bIsControllingBot = -1;
 
 
-//Protected/UnProtecte colors
+/* Protected/UnProtecte colors */
 int g_ProtectedColor[4] =  { 0, 255, 0, 255 };
 int g_UnProtectedColorFFA[4] =  { 255, 0, 0, 255 };
 int g_UnProtectedColorT[4] =  { 255, 0, 0, 255 };
@@ -78,10 +78,10 @@ public Plugin myinfo =
 
 public void OnPluginStart()
 {
-	//Plugin Version
+	/* Plugin Version */
 	CreateConVar("sm_spawnprotection_version", PLUGIN_VERSION, "Spawn Protection Version", FCVAR_SPONLY | FCVAR_REPLICATED);
 	
-	//ConVar List
+	/* ConVar List */
 	g_cvSPTime = CreateConVar("sm_spawnprotect_time", "14", "Sets how much time is left for spawn protection. (def, 14)");
 	g_cvSPTime.AddChangeHook(OnCVarChanged);
 	g_cvRainbowEnabled = CreateConVar("sm_spawnprotect_rainbowhud", "1", "Sets whether rainbow menu is enabled. (0 off, 1 on)");
@@ -97,29 +97,29 @@ public void OnPluginStart()
 	g_cvEndOnAttack = CreateConVar("sm_spawnprotect_endonattack", "1", "Should we disable spawn protect on attack. (0 off, 1 on)");
 	g_cvEndOnAttack.AddChangeHook(OnCVarChanged);
 	
-	//Cfg File
+	/* Config File */
 	AutoExecConfig(true, "AdvancedSpawnProtect");
 	
 	
-	//Hook Events
+	/* Hook Events */
 	HookEvent("player_spawn", Event_PlayerSpawn);
 	HookEvent("round_end", Event_RoundEnd, EventHookMode_Post);
 	HookEvent("round_prestart", Event_RoundStart, EventHookMode_Pre);
 	HookEvent("weapon_fire", Event_WeaponFire);
 	
-	//Admin CMD
+	/* Admin CMD */
 	RegAdminCmd("sm_rainbow", CMD_OnRainbow, ADMFLAG_RCON);
 	
-	//Loop Event
+	/* Loop Event */
 	LoopIngamePlayers(x)
 	{
 		OnClientPutInServer(x);
 		
 	}
-	//Int Values
+	/* Int Values */
 	g_iSPTime = g_cvSPTime.IntValue;
 	
-	//Bool Vlaues
+	/* Bool Vlaues */
 	g_isEnabled = g_cvRainbowEnabled.BoolValue;
 	g_isBotControled = g_cvBotControl.BoolValue;
 	g_isNotifyEnabled = g_cvNotifyStart.BoolValue;
@@ -127,11 +127,12 @@ public void OnPluginStart()
 	g_isColorEnabled = g_cvColorModels.BoolValue;
 	g_isAttackEnabled = g_cvEndOnAttack.BoolValue;
 	
-	//Find props
+	/* Find props */
 	g_bIsControllingBot = FindSendPropInfo("CCSPlayer", "m_bIsControllingBot");
 	
 }
-//OnCVarChagned values
+
+
 public void OnCVarChanged(ConVar convar, char[] oldValue, char[] newValue)
 {
 	if (convar == g_cvSPTime)
@@ -264,7 +265,7 @@ public Action Event_PlayerSpawn(Handle event, char[] name, bool dontBroadcast)
 	SetEntProp(client, Prop_Data, "m_takedamage", 0, 1);
 	SetPlayerColor(client, g_ProtectedColor);
 	g_iSPTimeLeft[client] = g_iSPTime;
-	//Might want to also display spawn prot hud message up here so clients dont get the 1 second delay due to using timers
+	/* Might want to also display spawn prot hud message up here so clients dont get the 1 second delay due to using timers */
 	
 	CreateTimer(1.0, Timer_SpawnProtection, client, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
 	return Plugin_Continue;
@@ -279,7 +280,7 @@ public Action Timer_SpawnProtection(Handle timer, int client)
 	if (g_isEnabled)
 	{
 		
-		//Get rainbow color for msg
+		/* Get rainbow color for msg */
 		int rbColor[4];
 		DataPack dp_rbColor = GetRainbowColor(client, 0.2);
 		dp_rbColor.Reset();
@@ -289,12 +290,11 @@ public Action Timer_SpawnProtection(Handle timer, int client)
 		rbColor[3] = 255;
 		delete dp_rbColor;
 		
-		SetHudTextParams(-1.0, 0.1, 5.0, rbColor[0], rbColor[1], rbColor[2], rbColor[3], 0, 0.1, 0.1, 0.1);
-		//    
+		SetHudTextParams(-1.0, 0.1, 5.0, rbColor[0], rbColor[1], rbColor[2], rbColor[3], 0, 0.1, 0.1, 0.1); 
 		
 	} else if (!g_isEnabled)
 	{
-		//Get normal hud colors
+		/* Get normal hud colors */
 		int HudColor[4];
 		
 		HudColor[0] = 0;
@@ -323,7 +323,7 @@ public Action Timer_SpawnProtection(Handle timer, int client)
 
 public Action Event_RoundStart(Handle event, char[] name, bool dontBroadcast)
 {
-	//Nothing atm
+	/* Nothing atm */
 	return Plugin_Continue;
 }
 
@@ -364,6 +364,7 @@ stock bool compare_arrays(any[] array1, any[] array2, int size)
 * Credit: TnTSCS
 * Url: https://forums.alliedmods.net/showthread.php?t=188807&page=13
 */
+
 stock bool IsPlayerControllingBot(int client)
 {
 	return view_as<bool>(GetEntData(client, g_bIsControllingBot, 1));
