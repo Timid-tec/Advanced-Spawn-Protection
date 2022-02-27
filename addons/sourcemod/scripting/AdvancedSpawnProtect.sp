@@ -107,9 +107,6 @@ public void OnPluginStart()
 	HookEvent("round_prestart", Event_RoundStart, EventHookMode_Pre);
 	HookEvent("weapon_fire", Event_WeaponFire);
 	
-	/* Admin CMD */
-	RegAdminCmd("sm_rainbow", CMD_OnRainbow, ADMFLAG_RCON);
-	
 	/* Loop Event */
 	LoopIngamePlayers(x)
 	{
@@ -187,18 +184,6 @@ public void RemoveSpawnProtection(int client)
 	CheckTeamColor(client);
 }
 
-public Action CMD_OnRainbow(int client, int args)
-{
-	if (!IsValidClient(client))
-		return Plugin_Handled;
-	//if (!Redie_InDm(client))
-	//return Plugin_Handled;
-	CreateTimer(0.6, Timer_RainbowColor, client, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
-	g_rainbowenabled[client] = !g_rainbowenabled[client];
-	PrintToChat(client, "%s Rainbow model %s!", prefix, g_rainbowenabled[client] ? "enabled":"disabled");
-	return Plugin_Handled;
-	
-}
 public Action Timer_RainbowColor(Handle timer, int client)
 {
 	if (!IsValidClient(client) || !g_rainbowenabled[client])
