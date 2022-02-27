@@ -60,11 +60,11 @@ int g_bIsControllingBot = -1;
 
 
 /* Protected/UnProtecte colors */
-int g_ProtectedColor[4] =  { 0, 255, 0, 255 };
-int g_UnProtectedColorFFA[4] =  { 255, 0, 0, 255 };
-int g_UnProtectedColorT[4] =  { 255, 0, 0, 255 };
-int g_UnProtectedColorCT[4] =  { 0, 0, 255, 255 };
-int g_NoProtectedColor[4] =  { 255, 255, 255, 255 };
+int g_ProtectedColor[4] = { 0, 255, 0, 255 };
+int g_UnProtectedColorFFA[4] = { 255, 0, 0, 255 };
+int g_UnProtectedColorT[4] = { 255, 0, 0, 255 };
+int g_UnProtectedColorCT[4] = { 0, 0, 255, 255 };
+int g_NoProtectedColor[4] = { 255, 255, 255, 255 };
 
 public Plugin myinfo = 
 {
@@ -290,7 +290,7 @@ public Action Timer_SpawnProtection(Handle timer, int client)
 		rbColor[3] = 255;
 		delete dp_rbColor;
 		
-		SetHudTextParams(-1.0, 0.1, 5.0, rbColor[0], rbColor[1], rbColor[2], rbColor[3], 0, 0.1, 0.1, 0.1); 
+		SetHudTextParams(-1.0, 0.1, 5.0, rbColor[0], rbColor[1], rbColor[2], rbColor[3], 0, 0.1, 0.1, 0.1);
 		
 	} else if (!g_isEnabled)
 	{
