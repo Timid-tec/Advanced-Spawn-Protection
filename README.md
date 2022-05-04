@@ -22,9 +22,6 @@ A source mod plugin simply made to make spawn protection more user-friendly, Wit
 - sm_spawnprotect_colormodels - Should we set colored player models. (0 off, 1 on) default 1
 - sm_spawnprotect_endonattack - Should we disable spawn protect on attack. (0 off, 1 on) default 1
 
-## Commands
-- /rainbow default admin flag ADMFLAG_RCON - Allows the player models on spawn to go into a loop of R G B (Removed:✖️)
-
 ## Things to Add
 - Allow players to set custom spawn protect model highlighting color.
 
