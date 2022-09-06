@@ -61,6 +61,7 @@ int g_bIsControllingBot = -1;
 
 
 //Protected/UnProtecte colors
+int g_ProtectedColor[4] = { 255, 0, 255, 255 };
 int g_UnProtectedColorFFA[4] = { 255, 0, 0, 255 };
 int g_UnProtectedColorT[4] = { 255, 0, 0, 255 };
 int g_UnProtectedColorCT[4] = { 0, 0, 255, 255 };
@@ -320,15 +321,7 @@ public Action Timer_SpawnProtection(Handle timer, int client)
 	if (g_iSPTimeLeft[client] > 0)
 	{
 		ShowSyncHudText(client, g_HudText, "SPAWN PROTECTION\n%d seconds left", g_iSPTimeLeft[client]);
-		int rbColor[4];
-		DataPack dp_rbColor = GetRainbowColor(client, 0.2);
-		dp_rbColor.Reset();
-		rbColor[0] = dp_rbColor.ReadCell();
-		rbColor[1] = dp_rbColor.ReadCell();
-		rbColor[2] = dp_rbColor.ReadCell();
-		rbColor[3] = 255;
-		delete dp_rbColor;
-		SetEntityRenderColor(client, rbColor[0], rbColor[1], rbColor[2], rbColor[3]);
+		SetPlayerColor(client, g_ProtectedColor);
 		g_iSPTimeLeft[client] -= 1;
 	}
 	else if (g_iSPTimeLeft[client] <= 0)
