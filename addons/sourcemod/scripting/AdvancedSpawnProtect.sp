@@ -73,7 +73,7 @@ public Plugin myinfo =
 	author = PLUGIN_AUTHOR, 
 	description = "Spawn protection for X seconds", 
 	version = PLUGIN_VERSION, 
-	url = ""
+	url = "https://steamcommunity.com/id/MrTimid/"
 };
 
 
