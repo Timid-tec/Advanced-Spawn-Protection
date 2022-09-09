@@ -61,7 +61,7 @@ int g_bIsControllingBot = -1;
 
 
 //Protected/UnProtecte colors
-int g_ProtectedColor[4] = { 255, 0, 255, 255 };
+int g_ProtectedColor[4] = { 141, 17, 224, 255 };
 int g_UnProtectedColorFFA[4] = { 255, 0, 0, 255 };
 int g_UnProtectedColorT[4] = { 255, 0, 0, 255 };
 int g_UnProtectedColorCT[4] = { 0, 0, 255, 255 };
@@ -267,15 +267,6 @@ public Action Event_PlayerSpawn(Handle event, char[] name, bool dontBroadcast)
 		PrintToChat(client, "%s Spawn protection is now \x04ON.", prefix);
 	
 	SetEntProp(client, Prop_Data, "m_takedamage", 0, 1);
-	int rbColor[4];
-	DataPack dp_rbColor = GetRainbowColor(client, 0.3);
-	dp_rbColor.Reset();
-	rbColor[0] = dp_rbColor.ReadCell();
-	rbColor[1] = dp_rbColor.ReadCell();
-	rbColor[2] = dp_rbColor.ReadCell();
-	rbColor[3] = 255;
-	delete dp_rbColor;
-	SetEntityRenderColor(client, rbColor[0], rbColor[1], rbColor[2], rbColor[3]);
 	g_iSPTimeLeft[client] = g_iSPTime;
 	//Might want to also display spawn prot hud message up here so clients dont get the 1 second delay due to using timers
 	
