@@ -45,7 +45,6 @@ float g_flSPTime;
 float g_flSPTimeLeft[MAXPLAYERS + 1];
 
 //Handles
-Handle g_HudText;
 
 //Bool get true or false
 bool g_isEnabled;
@@ -131,10 +130,6 @@ public void OnPluginStart()
 	
 	//Find props
 	g_bIsControllingBot = FindSendPropInfo("CCSPlayer", "m_bIsControllingBot");
-	
-	//SyncHudText
-	g_HudText = CreateHudSynchronizer();
-	
 }
 //OnCVarChagned values
 public void OnCVarChanged(ConVar convar, char[] oldValue, char[] newValue)
@@ -295,7 +290,7 @@ public Action Timer_SpawnProtection(Handle timer, int client)
 		rbColor[3] = 255;
 		delete dp_rbColor;
 		
-		SetHudTextParams(-1.0, 0.1, 5.0, rbColor[0], rbColor[1], rbColor[2], rbColor[3], 0, 0.1, 0.1, 0.1);
+		SetHudTextParams(-1.0, 0.1, 5.0, rbColor[0], rbColor[1], rbColor[2], rbColor[3], 0, 0.0, 0.0, 0.0);
 		//    
 		
 	} else if (!g_isEnabled)
@@ -308,18 +303,18 @@ public Action Timer_SpawnProtection(Handle timer, int client)
 		HudColor[2] = 0;
 		HudColor[3] = 255;
 		
-		SetHudTextParams(-1.0, 0.1, 5.0, HudColor[0], HudColor[1], HudColor[2], HudColor[3], 0, 0.1, 0.1, 0.1);
+		SetHudTextParams(-1.0, 0.1, 5.0, HudColor[0], HudColor[1], HudColor[2], HudColor[3], 0, 0.0, 0.0, 0.0);
 	}
 	
 	if (g_flSPTimeLeft[client] > 0.0)
 	{
-		ShowSyncHudText(client, g_HudText, "SPAWN PROTECTION\n%.0f seconds left", g_flSPTimeLeft[client]);
+		ShowHudText(client, 1, "SPAWN PROTECTION\n%.0f seconds left", g_flSPTimeLeft[client]);
 		SetPlayerColor(client, g_ProtectedColor);
 		g_flSPTimeLeft[client] -= 0.1;
 	}
 	else if (g_flSPTimeLeft[client] <= 0.0)
 	{
-		ShowSyncHudText(client, g_HudText, "SPAWN PROTECTION\nis now off!");
+		ShowHudText(client, 1, "SPAWN PROTECTION\nis now off!");
 		if (g_isNotifyEnabled)
 			PrintToChat(client, "%s Spawn protection is now \x07OFF.", prefix);
 		SetEntProp(client, Prop_Data, "m_takedamage", 2, 1);
