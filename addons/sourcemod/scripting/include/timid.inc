@@ -1,7 +1,7 @@
-#if defined _crabstocks_included
+#if defined _timid_included
 #endinput
 #endif
-#define _crabstocks_included
+#define _timid_included
 #pragma semicolon 1
 #pragma newdecls required
 
@@ -19,21 +19,21 @@
 #define LoopClients(%1) for(int %1 = 1; %1 <= MaxClients; %1++)
 
 #define LoopIngameClients(%1) for(int %1=1;%1<=MaxClients;%1++)\
-if (IsClientInGame(%1))
+if (IsClientInGame( % 1))
 	
 #define LoopIngamePlayers(%1) for(int %1=1;%1<=MaxClients;%1++)\
-if (IsClientInGame(%1) && !IsFakeClient(%1))
+if (IsClientInGame( % 1) && !IsFakeClient( % 1))
 	
 #define LoopAlivePlayers(%1) for(int %1=1;%1<=MaxClients;%1++)\
-if (IsClientInGame(%1) && IsPlayerAlive(%1))
+if (IsClientInGame( % 1) && IsPlayerAlive( % 1))
+	
 
-
-char g_ColorCheck[][] =  {"{normal}", "{darkred}", "{pink}", "{green}", "{yellow}", "{lightgreen}", "{lightred}", "{grey}", "{orange}", "{lightblue}", "{darkblue}", "{purple}"};
-char g_ColorReplace[][] =  {"\x01", "\x02", "\x03", "\x04", "\x05", "\x06", "\x07", "\x08", "\x09", "\x0B", "\x0C", "\x0E"};
+char g_ColorCheck[][] = { "{normal}", "{darkred}", "{pink}", "{green}", "{yellow}", "{lightgreen}", "{lightred}", "{grey}", "{orange}", "{lightblue}", "{darkblue}", "{purple}" };
+char g_ColorReplace[][] = { "\x01", "\x02", "\x03", "\x04", "\x05", "\x06", "\x07", "\x08", "\x09", "\x0B", "\x0C", "\x0E" };
 
 bool g_bWarmup_Round = false;
 
-int GrenadesAll[] =  {15, 17, 16, 14, 18, 17};
+int GrenadesAll[] = { 15, 17, 16, 14, 18, 17 };
 
 stock void HookEvents()
 {
@@ -68,10 +68,10 @@ stock void ClearTimer2(Handle timer)
 		KillTimer(timer);
 		timer = null;
 	}
-} 
+}
 stock void CPrintToChatAll(char[] msg)
 {
-	char message[MSG_LENGTH]; 
+	char message[MSG_LENGTH];
 	strcopy(message, sizeof(message), msg);
 	
 	for (int k = 0; k < sizeof(g_ColorCheck); k++)
@@ -81,7 +81,7 @@ stock void CPrintToChatAll(char[] msg)
 			ReplaceString(message, sizeof(message), g_ColorCheck[k], g_ColorReplace[k]);
 		}
 	}
-	PrintToChatAll("\x01\x0B%s",message);
+	PrintToChatAll("\x01\x0B%s", message);
 }
 
 stock bool IsWarmup()
@@ -99,7 +99,7 @@ stock bool IsWarmup()
 
 stock int GetEventClient(Event event)
 {
-	 return GetClientOfUserId(event.GetInt("userid"));
+	return GetClientOfUserId(event.GetInt("userid"));
 }
 
 stock bool IsValidClient(int client, bool alive = false)
@@ -110,70 +110,70 @@ stock bool IsValidClient(int client, bool alive = false)
 	}
 	return false;
 }
-stock void cRemoveWeapons(bool leavec4 = true) 
+stock void cRemoveWeapons(bool leavec4 = true)
 {
 	LoopAlivePlayers(k)
 	{
-			int primary = GetPlayerWeaponSlot(k, 0);
-			int secondary = GetPlayerWeaponSlot(k, 1);
-			int knife = GetPlayerWeaponSlot(k, 2);
-			if (primary > 0) 
-			{
-				RemovePlayerItem(k, primary);
-				RemoveEdict(primary);
-			}
-			
-			if (secondary > 0) 
-			{
-				RemovePlayerItem(k, secondary);
-				RemoveEdict(secondary);
-			}
-			if (!leavec4)
-			{
-				int c4medi = GetPlayerWeaponSlot(k, 4);
-				if (c4medi > 0) 
-				{
-					RemovePlayerItem(k, c4medi);
-					RemoveEdict(c4medi);
-				}
-			}
-			if (knife == -1)
-			{
-				GivePlayerItem(k, "weapon_knife");
-			}
-		}
-}
-stock void RemoveWeapons(int client, bool leavec4 = true) 
-{
-		int primary = GetPlayerWeaponSlot(client, 0);
-		int secondary = GetPlayerWeaponSlot(client, 1);
-		int knife = GetPlayerWeaponSlot(client, 2);
-		if (primary > 0) 
+		int primary = GetPlayerWeaponSlot(k, 0);
+		int secondary = GetPlayerWeaponSlot(k, 1);
+		int knife = GetPlayerWeaponSlot(k, 2);
+		if (primary > 0)
 		{
-			RemovePlayerItem(client, primary);
+			RemovePlayerItem(k, primary);
 			RemoveEdict(primary);
 		}
 		
-		if (secondary > 0) 
+		if (secondary > 0)
 		{
-			RemovePlayerItem(client, secondary);
+			RemovePlayerItem(k, secondary);
 			RemoveEdict(secondary);
 		}
 		if (!leavec4)
 		{
-			int c4medi = GetPlayerWeaponSlot(client, 4);
-			if (c4medi > 0) 
+			int c4medi = GetPlayerWeaponSlot(k, 4);
+			if (c4medi > 0)
 			{
-				RemovePlayerItem(client, c4medi);
+				RemovePlayerItem(k, c4medi);
 				RemoveEdict(c4medi);
 			}
 		}
 		if (knife == -1)
 		{
-			GivePlayerItem(client, "weapon_knife");
+			GivePlayerItem(k, "weapon_knife");
 		}
+	}
 }
-stock void RemoveNades() 
+stock void RemoveWeapons(int client, bool leavec4 = true)
+{
+	int primary = GetPlayerWeaponSlot(client, 0);
+	int secondary = GetPlayerWeaponSlot(client, 1);
+	int knife = GetPlayerWeaponSlot(client, 2);
+	if (primary > 0)
+	{
+		RemovePlayerItem(client, primary);
+		RemoveEdict(primary);
+	}
+	
+	if (secondary > 0)
+	{
+		RemovePlayerItem(client, secondary);
+		RemoveEdict(secondary);
+	}
+	if (!leavec4)
+	{
+		int c4medi = GetPlayerWeaponSlot(client, 4);
+		if (c4medi > 0)
+		{
+			RemovePlayerItem(client, c4medi);
+			RemoveEdict(c4medi);
+		}
+	}
+	if (knife == -1)
+	{
+		GivePlayerItem(client, "weapon_knife");
+	}
+}
+stock void RemoveNades()
 {
 	LoopAlivePlayers(k)
 	{
@@ -183,8 +183,8 @@ stock void RemoveNades()
 	}
 }
 
-public float IntToFloat(int integer){
+public float IntToFloat(int integer) {
 	char s[300];
-	IntToString(integer,s,sizeof(s));
+	IntToString(integer, s, sizeof(s));
 	return StringToFloat(s);
-}
+} 

@@ -29,7 +29,8 @@
 #define prefix "\x08[\x0CSpawn Protect\x08]"
 
 
-bool g_rainbowenabled[MAXPLAYERS + 1] = false;
+Handle Timer_SP[MAXPLAYERS + 1] = { INVALID_HANDLE, ... };
+bool g_rainbowenabled[MAXPLAYERS + 1];
 
 //ConVars
 ConVar g_cvSPTime;
@@ -61,7 +62,7 @@ int g_bIsControllingBot = -1;
 
 
 //Protected/UnProtecte colors
-int g_ProtectedColor[4] = { 141, 17, 224, 255 };
+int g_ProtectedColor[4] = { 141, 17, 224, 120 };
 int g_UnProtectedColorFFA[4] = { 255, 0, 0, 255 };
 int g_UnProtectedColorT[4] = { 255, 0, 0, 255 };
 int g_UnProtectedColorCT[4] = { 0, 0, 255, 255 };
@@ -236,6 +237,7 @@ public DataPack GetRainbowColor(int client, float flRate)
 public void OnClientPutInServer(int client)
 {
 	SDKHook(client, SDKHook_TraceAttack, OnTraceAttack);
+	Timer_SP[client] = INVALID_HANDLE;
 }
 
 public Action OnTraceAttack(int victim, int &attacker, int &inflictor, float &damage, int &damagetype, int &ammotype, int hitbox, int hitgroup)
@@ -270,7 +272,7 @@ public Action Event_PlayerSpawn(Handle event, char[] name, bool dontBroadcast)
 	g_iSPTimeLeft[client] = g_iSPTime;
 	//Might want to also display spawn prot hud message up here so clients dont get the 1 second delay due to using timers
 	
-	CreateTimer(1.0, Timer_SpawnProtection, client, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
+	Timer_SP[client] = CreateTimer(1.0, Timer_SpawnProtection, client, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
 	return Plugin_Continue;
 }
 
@@ -278,6 +280,7 @@ public Action Timer_SpawnProtection(Handle timer, int client)
 {
 	if (!IsValidClient(client) || !IsPlayerAlive(client))
 	{
+		Timer_SP[client] = INVALID_HANDLE;
 		return Plugin_Stop;
 	}
 	if (g_isEnabled)
@@ -351,8 +354,7 @@ public void SetPlayerColor(int client, int[] colorTarget)
 	GetEntityRenderColor(client, rgba[0], rgba[1], rgba[2], rgba[3]);
 	if (!compare_arrays(rgba, colorTarget, sizeof(rgba)))
 		SetEntityRenderColor(client, colorTarget[0], colorTarget[1], colorTarget[2], colorTarget[3]);
-	SetEntProp(client, Prop_Send, "m_nRenderFX", RENDERFX_NONE, 1);
-	SetEntProp(client, Prop_Send, "m_nRenderMode", RENDER_NORMAL, 1);
+	SetEntityRenderMode(client, RENDER_TRANSALPHA);
 }
 
 stock bool compare_arrays(any[] array1, any[] array2, int size)
