@@ -33,5 +33,6 @@ A source mod plugin simply made to make spawn protection more user-friendly, Wit
 
 | Version | Change-Log          |
 | ------- | ------------------ |
+| 4.2.2   | Added Transalpha Render to models |
 | 4.2.1   | Fixed ShowSyncHudText not Working |
 | 4.2.0   | Fixed Protected-Color to Green |
