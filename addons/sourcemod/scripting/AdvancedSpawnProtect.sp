@@ -40,6 +40,7 @@ ConVar g_cvNotifyStart;
 ConVar g_cvTeamOrFFA;
 ConVar g_cvColorModels;
 ConVar g_cvEndOnAttack;
+ConVar g_cvAlpha;
 
 //Int get 1++ value
 int g_iSPTime;
@@ -62,7 +63,7 @@ int g_bIsControllingBot = -1;
 
 
 //Protected/UnProtecte colors
-int g_ProtectedColor[4] = { 141, 17, 224, 120 };
+int g_ProtectedColor[4] = { 255, 255, 255, 120 };
 int g_UnProtectedColorFFA[4] = { 255, 0, 0, 255 };
 int g_UnProtectedColorT[4] = { 255, 0, 0, 255 };
 int g_UnProtectedColorCT[4] = { 0, 0, 255, 255 };
@@ -73,7 +74,7 @@ public Plugin myinfo =
 	name = "Advanced Spawn Protection", 
 	author = PLUGIN_AUTHOR, 
 	description = "Spawn protection for X seconds", 
-	version = "4.2.2", 
+	version = "4.2.3", 
 	url = "https://steamcommunity.com/id/MrTimid/"
 };
 
@@ -98,6 +99,9 @@ public void OnPluginStart()
 	g_cvColorModels.AddChangeHook(OnCVarChanged);
 	g_cvEndOnAttack = CreateConVar("sm_spawnprotect_endonattack", "1", "Should we disable spawn protect on attack. (0 off, 1 on)");
 	g_cvEndOnAttack.AddChangeHook(OnCVarChanged);
+	g_cvAlpha = FindConVar("sv_disable_immunity_alpha");
+	g_cvAlpha.IntValue = 1;
+	g_cvAlpha.AddChangeHook(OnCVarChanged);
 	
 	//Cfg File
 	AutoExecConfig(true, "AdvancedSpawnProtect");
@@ -164,12 +168,14 @@ public void OnCVarChanged(ConVar convar, char[] oldValue, char[] newValue)
 	{
 		g_isColorEnabled = g_cvColorModels.BoolValue;
 	}
-	
 	if (convar == g_cvEndOnAttack)
 	{
 		g_isAttackEnabled = g_cvEndOnAttack.BoolValue;
 	}
-	
+	if (strcmp(newValue, "1") != 0)
+	{
+		g_cvAlpha.IntValue = 1;
+	}
 }
 
 public Action Event_WeaponFire(Handle event, const char[] name, bool dontBroadcast)
