@@ -22,7 +22,7 @@
 #include <sdktools>
 #include <cstrike>
 #include <sdkhooks>
-#include <timid>
+#include <crabstocks>
 //#include <redieFFA>
 
 
@@ -249,7 +249,7 @@ public void OnClientPutInServer(int client)
 public Action OnTraceAttack(int victim, int &attacker, int &inflictor, float &damage, int &damagetype, int &ammotype, int hitbox, int hitgroup)
 {
 	if (victim == attacker)return Plugin_Continue;
-	if (g_iSPTimeLeft[attacker] > 0)
+	if (g_iSPTimeLeft[attacker] > 0 || IsWarmup())
 	{
 		return Plugin_Handled;
 	}
@@ -265,21 +265,29 @@ public void OnClientDisconnect(int client)
 public Action Event_PlayerSpawn(Handle event, char[] name, bool dontBroadcast)
 {
 	int client = GetClientOfUserId(GetEventInt(event, "userid"));
-	if (!IsValidClient(client) || IsWarmup())
+	if (!IsValidClient(client))
 		return Plugin_Continue;
+	
+	/* Disable shoting in warmup */
+	if (IsWarmup())
+		SetPlayerColor(client, g_ProtectedColor);
 	
 	if (g_isBotControled && IsPlayerControllingBot(client))
 		return Plugin_Continue;
 	
 	if (g_isNotifyEnabled)
+	{
 		PrintToChat(client, "%s Spawn protection is now \x04ON.", prefix);
+	}
 	
-	SetEntProp(client, Prop_Data, "m_takedamage", 0, 1);
-	g_iSPTimeLeft[client] = g_iSPTime;
-	//Might want to also display spawn prot hud message up here so clients dont get the 1 second delay due to using timers
-	
-	Timer_SP[client] = CreateTimer(1.0, Timer_SpawnProtection, client, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
-	return Plugin_Continue;
+	if (!IsWarmup())
+	{
+		SetEntProp(client, Prop_Data, "m_takedamage", 0, 1);
+		g_iSPTimeLeft[client] = g_iSPTime;
+		//Might want to also display spawn prot hud message up here so clients dont get the 1 second delay due to using timers
+		Timer_SP[client] = CreateTimer(1.0, Timer_SpawnProtection, client, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
+		return Plugin_Continue;
+	}
 }
 
 public Action Timer_SpawnProtection(Handle timer, int client)
