@@ -74,7 +74,7 @@ public Plugin myinfo =
 	name = "Advanced Spawn Protection", 
 	author = PLUGIN_AUTHOR, 
 	description = "Spawn protection for X seconds", 
-	version = "4.2.3", 
+	version = "4.2.4", 
 	url = "https://steamcommunity.com/id/MrTimid/"
 };
 
