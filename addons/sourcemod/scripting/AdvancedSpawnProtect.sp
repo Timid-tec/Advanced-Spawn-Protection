@@ -41,6 +41,7 @@ ConVar g_cvTeamOrFFA;
 ConVar g_cvColorModels;
 ConVar g_cvEndOnAttack;
 ConVar g_cvAlpha;
+ConVar g_cvImunityAlpha;
 
 //Int get 1++ value
 int g_iSPTime;
@@ -93,15 +94,16 @@ public void OnPluginStart()
 	g_cvBotControl.AddChangeHook(OnCVarChanged);
 	g_cvNotifyStart = CreateConVar("sm_spawnprotect_notifystart", "1", "Should we notify users that they have spawnprotection. (0 off, 1 on)");
 	g_cvNotifyStart.AddChangeHook(OnCVarChanged);
-	g_cvTeamOrFFA = CreateConVar("sm_spawnprotect_ffamode", "1", "Should we set colors for ffa or teams. (0 off, 1 on)");
+	g_cvTeamOrFFA = CreateConVar("sm_spawnprotect_ffamode", "0", "Should we set colors for ffa or teams. (0 off, 1 on)");
 	g_cvTeamOrFFA.AddChangeHook(OnCVarChanged);
 	g_cvColorModels = CreateConVar("sm_spawnprotect_colormodels", "1", "Should we set colored player models. (0 off, 1 on)");
 	g_cvColorModels.AddChangeHook(OnCVarChanged);
-	g_cvEndOnAttack = CreateConVar("sm_spawnprotect_endonattack", "1", "Should we disable spawn protect on attack. (0 off, 1 on)");
+	g_cvEndOnAttack = CreateConVar("sm_spawnprotect_endonattack", "0", "Should we disable spawn protect on attack. (0 off, 1 on)");
 	g_cvEndOnAttack.AddChangeHook(OnCVarChanged);
+	g_cvImunityAlpha = CreateConVar("sm_spawnprotect_imunity_alpha", "1", "Should we enabled transpaedncy for players/on spawn protect. (0 off, 1 on)");
+	g_cvImunityAlpha.AddChangeHook(OnCVarChanged);
+	
 	g_cvAlpha = FindConVar("sv_disable_immunity_alpha");
-	g_cvAlpha.IntValue = 1;
-	g_cvAlpha.AddChangeHook(OnCVarChanged);
 	
 	//Cfg File
 	AutoExecConfig(true, "AdvancedSpawnProtect");
@@ -172,9 +174,9 @@ public void OnCVarChanged(ConVar convar, char[] oldValue, char[] newValue)
 	{
 		g_isAttackEnabled = g_cvEndOnAttack.BoolValue;
 	}
-	if (strcmp(newValue, "1") != 0)
+	if (convar == g_cvImunityAlpha)
 	{
-		g_cvAlpha.IntValue = 1;
+		g_cvAlpha = g_cvImunityAlpha.IntValue;
 	}
 }
 
