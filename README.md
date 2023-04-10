@@ -35,6 +35,7 @@ A source mod plugin simply made to make spawn protection more user-friendly, Wit
 
 | Version | Change-Log          |
 | ------- | ------------------ |
+| 4.2.4   | Added some changes to include, and other issues fixed |
 | 4.2.3   | Fixed Transalpha Render to models with cvar change |
 | 4.2.2   | Added Transalpha Render to models |
 | 4.2.1   | Fixed ShowSyncHudText not Working |
