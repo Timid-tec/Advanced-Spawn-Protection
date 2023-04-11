@@ -72,7 +72,7 @@ public Plugin myinfo =
 	name = "Advanced Spawn Protection", 
 	author = "Timid", 
 	description = "Spawn protection for X seconds", 
-	version = "4.2.4", 
+	version = "4.2.5", 
 	url = "https://steamcommunity.com/id/MrTimid/"
 };
 
@@ -86,9 +86,9 @@ public void OnPluginStart()
 	g_cvRainbowEnabled.AddChangeHook(OnCVarChanged);
 	g_cvBotControl = CreateConVar("sm_spawnprotect_botcontrol", "1", "Should bots receive spawn protection if another player takes control of them. (0 off, 1 on)");
 	g_cvBotControl.AddChangeHook(OnCVarChanged);
-	g_cvNotifyStart = CreateConVar("sm_spawnprotect_notifystart", "1", "Should we notify users that they have spawnprotection. (0 off, 1 on)");
+	g_cvNotifyStart = CreateConVar("sm_spawnprotect_notifystart", "1", "Should we notify users, in game chat, that they have spawnprotection. (0 off, 1 on)");
 	g_cvNotifyStart.AddChangeHook(OnCVarChanged);
-	g_cvTeamOrFFA = CreateConVar("sm_spawnprotect_ffamode", "1", "Should we set colors for ffa or teams. (0 off, 1 on)");
+	g_cvTeamOrFFA = CreateConVar("sm_spawnprotect_ffamode", "1", "Should we set colors for ffa or teams. (0 teams, 1 ffa)");
 	g_cvTeamOrFFA.AddChangeHook(OnCVarChanged);
 	g_cvColorModels = CreateConVar("sm_spawnprotect_colormodels", "1", "Should we set colored player models. (0 off, 1 on)");
 	g_cvColorModels.AddChangeHook(OnCVarChanged);
@@ -261,7 +261,7 @@ public Action Event_PlayerSpawn(Handle event, char[] name, bool dontBroadcast)
 {
 	int client = GetClientOfUserId(GetEventInt(event, "userid"));
 	if (!IsValidClient(client))
-		return Plugin_Continue;
+		return Plugin_Handled;
 	
 	/* Disable shoting in warmup */
 	if (IsWarmup())
@@ -275,12 +275,12 @@ public Action Event_PlayerSpawn(Handle event, char[] name, bool dontBroadcast)
 		PrintToChat(client, "%s Spawn protection is now \x04ON.", prefix);
 	}
 	
-	if (!IsWarmup())
+	if (!IsWarmup() && g_iSPTimeLeft[client] <= 0)
 	{
 		SetEntProp(client, Prop_Data, "m_takedamage", 0, 1);
 		g_iSPTimeLeft[client] = g_iSPTime;
 		//Might want to also display spawn prot hud message up here so clients dont get the 1 second delay due to using timers
-		Timer_SP[client] = CreateTimer(1.0, Timer_SpawnProtection, client, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
+		Timer_SP[client] = CreateTimer(1.0, Timer_SpawnProtection, client, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE | TIMER_DATA_HNDL_CLOSE);
 		return Plugin_Continue;
 	}
 	
@@ -296,7 +296,6 @@ public Action Timer_SpawnProtection(Handle timer, int client)
 	}
 	if (g_isEnabled)
 	{
-		
 		//Get rainbow color for msg
 		int rbColor[4];
 		DataPack dp_rbColor = GetRainbowColor(client, 0.2);
