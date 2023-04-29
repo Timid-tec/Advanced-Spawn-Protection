@@ -275,7 +275,10 @@ public Action Event_PlayerSpawn(Handle event, char[] name, bool dontBroadcast)
 		PrintToChat(client, "%s Spawn protection is now \x04ON.", prefix);
 	}
 	
-	if (!IsWarmup() && g_iSPTimeLeft[client] <= 0)
+	//Close Timer
+	IsValidHandler(Timer_SP[client])
+	
+	if (!IsWarmup())
 	{
 		SetEntProp(client, Prop_Data, "m_takedamage", 0, 1);
 		g_iSPTimeLeft[client] = g_iSPTime;
@@ -335,6 +338,9 @@ public Action Timer_SpawnProtection(Handle timer, int client)
 			PrintToChat(client, "%s Spawn protection is now \x07OFF.", prefix);
 		SetEntProp(client, Prop_Data, "m_takedamage", 2, 1);
 		CheckTeamColor(client);
+		//
+		Timer_SP[client] = INVALID_HANDLE
+		//
 		return Plugin_Stop;
 	}
 	return Plugin_Continue;
