@@ -4,7 +4,6 @@
 #define _timid_included
 
 #define PLUGIN_AUTHOR "Timid"
-#define PLUGIN_VERSION "4.2.0"
 
 #include <sourcemod>
 #include <sdktools>
