@@ -415,4 +415,4 @@ stock void CheckTeamColor(int client)
 	{
 		SetPlayerColor(client, g_UnProtectedColorCT);
 	}
-} 
+}
