@@ -1,418 +1,512 @@
-/*  [CS:GO] Advanced-Spawn-Protection pluins: Lightweight spawn protection plugin.
- *
- *  Copyright (C) 2021 Mr.Timid // timidexempt@gmail.com
- * 
- * This program is free software: you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the Free
- * Software Foundation, either version 3 of the License, or (at your option) 
- * any later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT 
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License along with 
- * this program. If not, see http://www.gnu.org/licenses/.
- */
-
-#define DEBUG
+#pragma semicolon 1
+#pragma newdecls required
 
 #include <sourcemod>
 #include <sdktools>
+#include <sdktools_gamerules>
 #include <cstrike>
 #include <sdkhooks>
-#include <timid>
-//#include <redieFFA>
 
+#define PLUGIN_VERSION "4.2.7"
+#define CHAT_PREFIX "\x08[\x0CSpawn Protect\x08]"
+#define DAMAGE_NO 0
+#define DAMAGE_YES 2
 
-#define prefix "\x08[\x0CSpawn Protect\x08]"
-
-Handle Timer_SP[MAXPLAYERS + 1] = { INVALID_HANDLE, ... };
-bool g_rainbowenabled[MAXPLAYERS + 1];
-
-//ConVars
-ConVar g_cvSPTime;
-ConVar g_cvRainbowEnabled;
-ConVar g_cvBotControl;
-ConVar g_cvNotifyStart;
-ConVar g_cvTeamOrFFA;
-ConVar g_cvColorModels;
-ConVar g_cvEndOnAttack;
-ConVar g_cvAlpha;
-
-//Int get 1++ value
-int g_iSPTime;
-int g_iSPTimeLeft[MAXPLAYERS + 1];
-
-//Handles
-Handle g_HudText;
-
-//Bool get true or false
-bool g_isEnabled;
-bool g_isBotControled;
-bool g_isNotifyEnabled;
-bool g_isFFAEnabled;
-bool g_isColorEnabled;
-bool g_isAttackEnabled;
-
-
-//Props
-int g_bIsControllingBot = -1;
-
-
-//Protected/UnProtecte colors
-int g_ProtectedColor[4] = { 255, 255, 255, 120 };
-int g_UnProtectedColorFFA[4] = { 255, 0, 0, 255 };
-int g_UnProtectedColorT[4] = { 255, 0, 0, 255 };
-int g_UnProtectedColorCT[4] = { 0, 0, 255, 255 };
-int g_NoProtectedColor[4] = { 255, 255, 255, 255 };
-
-public Plugin myinfo = 
+public Plugin myinfo =
 {
-	name = "Advanced Spawn Protection", 
-	author = "Timid", 
-	description = "Spawn protection for X seconds", 
-	version = "4.2.5", 
+	name = "Advanced Spawn Protection",
+	author = "Timid",
+	description = "Lightweight spawn protection for CS:GO",
+	version = PLUGIN_VERSION,
 	url = "https://steamcommunity.com/id/MrTimid/"
 };
 
+static const int g_ProtectedColor[4] = {255, 255, 255, 120};
+static const int g_UnprotectedColorFFA[4] = {255, 0, 0, 255};
+static const int g_UnprotectedColorT[4] = {255, 0, 0, 255};
+static const int g_UnprotectedColorCT[4] = {0, 0, 255, 255};
+static const int g_DefaultColor[4] = {255, 255, 255, 255};
+
+Handle g_SpawnProtectionTimer[MAXPLAYERS + 1];
+Handle g_RainbowTimer[MAXPLAYERS + 1];
+Handle g_HudText = null;
+
+bool g_RainbowModelEnabled[MAXPLAYERS + 1];
+int g_SpawnProtectionTimeLeft[MAXPLAYERS + 1];
+
+ConVar g_CvarSpawnProtectionTime = null;
+ConVar g_CvarRainbowHud = null;
+ConVar g_CvarBotControl = null;
+ConVar g_CvarNotifyStart = null;
+ConVar g_CvarFfaMode = null;
+ConVar g_CvarColorModels = null;
+ConVar g_CvarEndOnAttack = null;
+ConVar g_CvarDisableImmunityAlpha = null;
+
+int g_SpawnProtectionDuration = 0;
+int g_IsControllingBotOffset = -1;
+
+bool g_RainbowHudEnabled = true;
+bool g_BotControlEnabled = false;
+bool g_NotifyEnabled = true;
+bool g_FfaColorsEnabled = true;
+bool g_ColorModelsEnabled = true;
+bool g_EndOnAttackEnabled = true;
 
 public void OnPluginStart()
 {
-	//ConVar List
-	g_cvSPTime = CreateConVar("sm_spawnprotect_time", "14", "Sets how much time is left for spawn protection. (def, 14)");
-	g_cvSPTime.AddChangeHook(OnCVarChanged);
-	g_cvRainbowEnabled = CreateConVar("sm_spawnprotect_rainbowhud", "1", "Sets whether rainbow menu is enabled. (0 off, 1 on)");
-	g_cvRainbowEnabled.AddChangeHook(OnCVarChanged);
-	g_cvBotControl = CreateConVar("sm_spawnprotect_botcontrol", "1", "Should bots receive spawn protection if another player takes control of them. (0 off, 1 on)");
-	g_cvBotControl.AddChangeHook(OnCVarChanged);
-	g_cvNotifyStart = CreateConVar("sm_spawnprotect_notifystart", "1", "Should we notify users, in game chat, that they have spawnprotection. (0 off, 1 on)");
-	g_cvNotifyStart.AddChangeHook(OnCVarChanged);
-	g_cvTeamOrFFA = CreateConVar("sm_spawnprotect_ffamode", "1", "Should we set colors for ffa or teams. (0 teams, 1 ffa)");
-	g_cvTeamOrFFA.AddChangeHook(OnCVarChanged);
-	g_cvColorModels = CreateConVar("sm_spawnprotect_colormodels", "1", "Should we set colored player models. (0 off, 1 on)");
-	g_cvColorModels.AddChangeHook(OnCVarChanged);
-	g_cvEndOnAttack = CreateConVar("sm_spawnprotect_endonattack", "1", "Should we disable spawn protect on attack. (0 off, 1 on)");
-	g_cvEndOnAttack.AddChangeHook(OnCVarChanged);
-	g_cvAlpha = FindConVar("sv_disable_immunity_alpha");
-	g_cvAlpha.IntValue = 1;
-	g_cvAlpha.AddChangeHook(OnCVarChanged);
-	
-	//Cfg File
+	g_CvarSpawnProtectionTime = CreateConVar("sm_spawnprotect_time", "12", "Seconds of spawn protection after a player spawns.", FCVAR_NONE, true, 0.0, true, 60.0);
+	g_CvarRainbowHud = CreateConVar("sm_spawnprotect_rainbowhud", "1", "Use rainbow HUD colors for the spawn protection message.", FCVAR_NONE, true, 0.0, true, 1.0);
+	g_CvarBotControl = CreateConVar("sm_spawnprotect_botcontrol", "0", "Whether a player controlling a bot should still receive spawn protection.", FCVAR_NONE, true, 0.0, true, 1.0);
+	g_CvarNotifyStart = CreateConVar("sm_spawnprotect_notifystart", "1", "Print chat messages when spawn protection starts or ends.", FCVAR_NONE, true, 0.0, true, 1.0);
+	g_CvarFfaMode = CreateConVar("sm_spawnprotect_ffamode", "1", "Use FFA colors instead of separate team colors for unprotected players.", FCVAR_NONE, true, 0.0, true, 1.0);
+	g_CvarColorModels = CreateConVar("sm_spawnprotect_colormodels", "1", "Color player models while they are unprotected.", FCVAR_NONE, true, 0.0, true, 1.0);
+	g_CvarEndOnAttack = CreateConVar("sm_spawnprotect_endonattack", "1", "End spawn protection as soon as the protected player fires.", FCVAR_NONE, true, 0.0, true, 1.0);
+
+	g_CvarSpawnProtectionTime.AddChangeHook(OnConVarChanged);
+	g_CvarRainbowHud.AddChangeHook(OnConVarChanged);
+	g_CvarBotControl.AddChangeHook(OnConVarChanged);
+	g_CvarNotifyStart.AddChangeHook(OnConVarChanged);
+	g_CvarFfaMode.AddChangeHook(OnConVarChanged);
+	g_CvarColorModels.AddChangeHook(OnConVarChanged);
+	g_CvarEndOnAttack.AddChangeHook(OnConVarChanged);
+
+	g_CvarDisableImmunityAlpha = FindConVar("sv_disable_immunity_alpha");
+	if (g_CvarDisableImmunityAlpha != null)
+	{
+		g_CvarDisableImmunityAlpha.IntValue = 1;
+		g_CvarDisableImmunityAlpha.AddChangeHook(OnConVarChanged);
+	}
+
 	AutoExecConfig(true, "AdvancedSpawnProtect");
-	
-	
-	//Hook Events
-	HookEvent("player_spawn", Event_PlayerSpawn);
-	HookEvent("round_end", Event_RoundEnd, EventHookMode_Post);
-	HookEvent("round_prestart", Event_RoundStart, EventHookMode_Pre);
-	HookEvent("weapon_fire", Event_WeaponFire);
-	
-	//Admin CMD
-	RegAdminCmd("sm_rainbow", CMD_OnRainbow, ADMFLAG_RCON);
-	
-	//Loop Event
-	LoopIngamePlayers(x)
-	{
-		OnClientPutInServer(x);
-		
-	}
-	//Int Values
-	g_iSPTime = g_cvSPTime.IntValue;
-	
-	
-	//Bool Vlaues
-	g_isEnabled = g_cvRainbowEnabled.BoolValue;
-	g_isBotControled = g_cvBotControl.BoolValue;
-	g_isNotifyEnabled = g_cvNotifyStart.BoolValue;
-	g_isFFAEnabled = g_cvTeamOrFFA.BoolValue;
-	g_isColorEnabled = g_cvColorModels.BoolValue;
-	g_isAttackEnabled = g_cvEndOnAttack.BoolValue;
-	
-	//Find props
-	g_bIsControllingBot = FindSendPropInfo("CCSPlayer", "m_bIsControllingBot");
-	
-	//SyncHudText
+
+	HookEvent("player_spawn", Event_PlayerSpawn, EventHookMode_Post);
+	HookEvent("round_end", Event_RoundEnd, EventHookMode_PostNoCopy);
+	HookEvent("round_prestart", Event_RoundPrestart, EventHookMode_PostNoCopy);
+	HookEvent("weapon_fire", Event_WeaponFire, EventHookMode_Post);
+
+	RegAdminCmd("sm_rainbow", Command_ToggleRainbow, ADMFLAG_RCON, "Toggle a rainbow render effect on yourself.");
+
+	g_IsControllingBotOffset = FindSendPropInfo("CCSPlayer", "m_bIsControllingBot");
 	g_HudText = CreateHudSynchronizer();
-	
-}
-//OnCVarChagned values
-public void OnCVarChanged(ConVar convar, char[] oldValue, char[] newValue)
-{
-	if (convar == g_cvSPTime)
+
+	RefreshSettings();
+
+	for (int client = 1; client <= MaxClients; client++)
 	{
-		g_iSPTime = g_cvSPTime.IntValue;
-	}
-	if (convar == g_cvRainbowEnabled)
-	{
-		g_isEnabled = g_cvRainbowEnabled.BoolValue;
-	}
-	if (convar == g_cvBotControl)
-	{
-		g_isBotControled = g_cvBotControl.BoolValue;
-	}
-	if (convar == g_cvNotifyStart)
-	{
-		g_isNotifyEnabled = g_cvNotifyStart.BoolValue;
-	}
-	if (convar == g_cvTeamOrFFA)
-	{
-		g_isFFAEnabled = g_cvTeamOrFFA.BoolValue;
-	}
-	if (convar == g_cvColorModels)
-	{
-		g_isColorEnabled = g_cvColorModels.BoolValue;
-	}
-	if (convar == g_cvEndOnAttack)
-	{
-		g_isAttackEnabled = g_cvEndOnAttack.BoolValue;
-	}
-	if (strcmp(newValue, "1") != 0)
-	{
-		g_cvAlpha.IntValue = 1;
+		if (IsClientInGame(client))
+		{
+			OnClientPutInServer(client);
+		}
 	}
 }
 
-public Action Event_WeaponFire(Handle event, const char[] name, bool dontBroadcast)
+public void OnPluginEnd()
 {
-	int client = GetClientOfUserId(GetEventInt(event, "userid"));
-	if (!IsValidClient(client) || !IsPlayerAlive(client))
-		return Plugin_Stop;
-	
-	if (!g_isAttackEnabled)
-		return Plugin_Continue;
-	
-	RemoveSpawnProtection(client);
-	return Plugin_Continue;
+	for (int client = 1; client <= MaxClients; client++)
+	{
+		StopSpawnProtectionTimer(client);
+		StopRainbowTimer(client);
+	}
 }
-
-public void RemoveSpawnProtection(int client)
-{
-	SetEntProp(client, Prop_Data, "m_takedamage", 2, 1);
-	g_iSPTimeLeft[client] = 0;
-	CheckTeamColor(client);
-}
-
-public Action CMD_OnRainbow(int client, int args)
-{
-	if (!IsValidClient(client))
-		return Plugin_Handled;
-	//if (!Redie_InDm(client))
-	//return Plugin_Handled;
-	CreateTimer(0.1, Timer_RainbowColor, client, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
-	g_rainbowenabled[client] = !g_rainbowenabled[client];
-	PrintToChat(client, "%s Rainbow model %s!", prefix, g_rainbowenabled[client] ? "enabled":"disabled");
-	return Plugin_Handled;
-	
-}
-public Action Timer_RainbowColor(Handle timer, int client)
-{
-	if (!IsValidClient(client) || !g_rainbowenabled[client])
-		return Plugin_Continue;
-	int rbColor[4];
-	DataPack dp_rbColor = GetRainbowColor(client, 0.3);
-	dp_rbColor.Reset();
-	rbColor[0] = dp_rbColor.ReadCell();
-	rbColor[1] = dp_rbColor.ReadCell();
-	rbColor[2] = dp_rbColor.ReadCell();
-	rbColor[3] = 255;
-	delete dp_rbColor;
-	SetEntityRenderColor(client, rbColor[0], rbColor[1], rbColor[2], rbColor[3]);
-	return Plugin_Continue;
-}
-
-public DataPack GetRainbowColor(int client, float flRate)
-{
-	DataPack rbColor = new DataPack();
-	int color[3];
-	color[0] = RoundToNearest(Cosine((GetGameTime() * flRate) + client + 0) * 127.5 + 127.5);
-	color[1] = RoundToNearest(Cosine((GetGameTime() * flRate) + client + 2) * 127.5 + 127.5);
-	color[2] = RoundToNearest(Cosine((GetGameTime() * flRate) + client + 4) * 127.5 + 127.5);
-	rbColor.WriteCell(color[0]);
-	rbColor.WriteCell(color[1]);
-	rbColor.WriteCell(color[2]);
-	return rbColor;
-}
-
 
 public void OnClientPutInServer(int client)
 {
 	SDKHook(client, SDKHook_TraceAttack, OnTraceAttack);
-	Timer_SP[client] = INVALID_HANDLE;
-}
 
-public Action OnTraceAttack(int victim, int &attacker, int &inflictor, float &damage, int &damagetype, int &ammotype, int hitbox, int hitgroup)
-{
-	if (victim == attacker)return Plugin_Continue;
-	if (g_iSPTimeLeft[attacker] > 0 || IsWarmup())
-	{
-		return Plugin_Handled;
-	}
-	return Plugin_Continue;
+	g_SpawnProtectionTimeLeft[client] = 0;
+	g_RainbowModelEnabled[client] = false;
+	g_SpawnProtectionTimer[client] = null;
+	g_RainbowTimer[client] = null;
 }
 
 public void OnClientDisconnect(int client)
 {
 	SDKUnhook(client, SDKHook_TraceAttack, OnTraceAttack);
-	g_rainbowenabled[client] = false;
+
+	StopSpawnProtectionTimer(client);
+	StopRainbowTimer(client);
+
+	g_SpawnProtectionTimeLeft[client] = 0;
+	g_RainbowModelEnabled[client] = false;
 }
 
-public Action Event_PlayerSpawn(Handle event, char[] name, bool dontBroadcast)
+public void OnConVarChanged(ConVar convar, const char[] oldValue, const char[] newValue)
 {
-	int client = GetClientOfUserId(GetEventInt(event, "userid"));
+	if (convar == g_CvarDisableImmunityAlpha && g_CvarDisableImmunityAlpha != null && g_CvarDisableImmunityAlpha.IntValue != 1)
+	{
+		g_CvarDisableImmunityAlpha.IntValue = 1;
+		return;
+	}
+
+	RefreshSettings();
+}
+
+public void Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast)
+{
+	int client = GetClientOfUserId(event.GetInt("userid"));
 	if (!IsValidClient(client))
+	{
+		return;
+	}
+
+	DisableSpawnProtection(client, false, false);
+
+	if (IsWarmupActive())
+	{
+		SetClientRenderColor(client, g_ProtectedColor);
+		EnsureRainbowTimer(client);
+		return;
+	}
+
+	if (!g_BotControlEnabled && IsPlayerControllingBot(client))
+	{
+		ApplyUnprotectedColor(client);
+		EnsureRainbowTimer(client);
+		return;
+	}
+
+	if (g_SpawnProtectionDuration <= 0)
+	{
+		ApplyUnprotectedColor(client);
+		EnsureRainbowTimer(client);
+		return;
+	}
+
+	SetEntProp(client, Prop_Data, "m_takedamage", DAMAGE_NO, 1);
+	g_SpawnProtectionTimeLeft[client] = g_SpawnProtectionDuration;
+
+	SetClientRenderColor(client, g_ProtectedColor);
+	ShowSpawnProtectionCountdown(client);
+
+	if (g_NotifyEnabled)
+	{
+		PrintToChat(client, "%s Spawn protection is now \x04ON.", CHAT_PREFIX);
+	}
+
+	g_SpawnProtectionTimer[client] = CreateTimer(1.0, Timer_SpawnProtection, client, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
+	EnsureRainbowTimer(client);
+}
+
+public void Event_WeaponFire(Event event, const char[] name, bool dontBroadcast)
+{
+	if (!g_EndOnAttackEnabled || IsWarmupActive())
+	{
+		return;
+	}
+
+	int client = GetClientOfUserId(event.GetInt("userid"));
+	if (!IsAliveClient(client) || g_SpawnProtectionTimeLeft[client] <= 0)
+	{
+		return;
+	}
+
+	DisableSpawnProtection(client, true, true);
+}
+
+public void Event_RoundPrestart(Event event, const char[] name, bool dontBroadcast)
+{
+	ResetAllSpawnProtection();
+}
+
+public void Event_RoundEnd(Event event, const char[] name, bool dontBroadcast)
+{
+	ResetAllSpawnProtection();
+}
+
+public Action Command_ToggleRainbow(int client, int args)
+{
+	if (!IsValidClient(client))
+	{
 		return Plugin_Handled;
-	
-	/* Disable shoting in warmup */
-	if (IsWarmup())
-		SetPlayerColor(client, g_ProtectedColor);
-	
-	if (g_isBotControled && IsPlayerControllingBot(client))
-		return Plugin_Continue;
-	
-	if (g_isNotifyEnabled)
-	{
-		PrintToChat(client, "%s Spawn protection is now \x04ON.", prefix);
 	}
-	
-	//Close Timer
-	IsValidHandler(Timer_SP[client])
-	
-	if (!IsWarmup())
-	{
-		SetEntProp(client, Prop_Data, "m_takedamage", 0, 1);
-		g_iSPTimeLeft[client] = g_iSPTime;
-		//Might want to also display spawn prot hud message up here so clients dont get the 1 second delay due to using timers
-		Timer_SP[client] = CreateTimer(1.0, Timer_SpawnProtection, client, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE | TIMER_DATA_HNDL_CLOSE);
-		return Plugin_Continue;
-	}
-	
-	return Plugin_Continue;
-}
 
-public Action Timer_SpawnProtection(Handle timer, int client)
-{
-	if (!IsValidClient(client) || !IsPlayerAlive(client))
-	{
-		Timer_SP[client] = INVALID_HANDLE;
-		return Plugin_Stop;
-	}
-	if (g_isEnabled)
-	{
-		//Get rainbow color for msg
-		int rbColor[4];
-		DataPack dp_rbColor = GetRainbowColor(client, 0.2);
-		dp_rbColor.Reset();
-		rbColor[0] = dp_rbColor.ReadCell();
-		rbColor[1] = dp_rbColor.ReadCell();
-		rbColor[2] = dp_rbColor.ReadCell();
-		rbColor[3] = 255;
-		delete dp_rbColor;
-		
-		SetHudTextParams(-1.0, 0.1, 5.0, rbColor[0], rbColor[1], rbColor[2], rbColor[3], 0, 0.1, 0.1, 0.1);
-		//    
-		
-	} else if (!g_isEnabled)
-	{
-		//Get normal hud colors
-		int HudColor[4];
-		
-		HudColor[0] = 0;
-		HudColor[1] = 255;
-		HudColor[2] = 0;
-		HudColor[3] = 255;
-		
-		SetHudTextParams(-1.0, 0.1, 5.0, HudColor[0], HudColor[1], HudColor[2], HudColor[3], 0, 0.1, 0.1, 0.1);
-	}
-	
-	if (g_iSPTimeLeft[client] > 0)
-	{
-		ShowSyncHudText(client, g_HudText, "SPAWN PROTECTION\n%d seconds left", g_iSPTimeLeft[client]);
-		SetPlayerColor(client, g_ProtectedColor);
-		g_iSPTimeLeft[client] -= 1;
-	}
-	else if (g_iSPTimeLeft[client] <= 0)
-	{
-		ShowSyncHudText(client, g_HudText, "SPAWN PROTECTION\nis now off!");
-		if (g_isNotifyEnabled)
-			PrintToChat(client, "%s Spawn protection is now \x07OFF.", prefix);
-		SetEntProp(client, Prop_Data, "m_takedamage", 2, 1);
-		CheckTeamColor(client);
-		//
-		Timer_SP[client] = INVALID_HANDLE
-		//
-		return Plugin_Stop;
-	}
-	return Plugin_Continue;
-}
+	g_RainbowModelEnabled[client] = !g_RainbowModelEnabled[client];
 
-public Action Event_RoundStart(Handle event, char[] name, bool dontBroadcast)
-{
-	//Nothing atm
-	return Plugin_Continue;
-}
-
-public Action Event_RoundEnd(Handle event, char[] name, bool dontBroadcast)
-{
-	int client = GetClientOfUserId(GetEventInt(event, "userid"));
-	LoopAlivePlayers(x)
+	if (g_RainbowModelEnabled[client])
 	{
-		CheckTeamColor(client);
-	}
-	return Plugin_Continue;
-}
-
-public void SetPlayerColor(int client, int[] colorTarget)
-{
-	if (!IsValidClient(client))
-		return;
-	int rgba[4];
-	GetEntityRenderColor(client, rgba[0], rgba[1], rgba[2], rgba[3]);
-	if (!compare_arrays(rgba, colorTarget, sizeof(rgba)))
-		SetEntityRenderColor(client, colorTarget[0], colorTarget[1], colorTarget[2], colorTarget[3]);
-	SetEntityRenderMode(client, RENDER_TRANSALPHA);
-}
-
-stock bool compare_arrays(any[] array1, any[] array2, int size)
-{
-	for (int i = 0; i < size; i++)
-	if (array1[i] != array2[i])
-	{
-		return false;
-	}
-	return true;
-}
-
-/* 
-* Check if a player is controlling a bot
-* Credit: TnTSCS
-* Url: https://forums.alliedmods.net/showthread.php?t=188807&page=13
-*/
-stock bool IsPlayerControllingBot(int client)
-{
-	return view_as<bool>(GetEntData(client, g_bIsControllingBot, 1));
-}
-
-stock void CheckTeamColor(int client)
-{
-	
-	if (!IsValidClient(client))
-		return;
-	if (!g_isColorEnabled)
-	{
-		SetPlayerColor(client, g_NoProtectedColor);
-		return;
-	}
-	else if (g_isFFAEnabled)
-	{
-		SetPlayerColor(client, g_UnProtectedColorFFA);
-	}
-	else if (GetClientTeam(client) == CS_TEAM_T)
-	{
-		SetPlayerColor(client, g_UnProtectedColorT);
+		EnsureRainbowTimer(client);
 	}
 	else
 	{
-		SetPlayerColor(client, g_UnProtectedColorCT);
+		StopRainbowTimer(client);
+
+		if (g_SpawnProtectionTimeLeft[client] > 0 || IsWarmupActive())
+		{
+			SetClientRenderColor(client, g_ProtectedColor);
+		}
+		else
+		{
+			ApplyUnprotectedColor(client);
+		}
 	}
+
+	PrintToChat(client, "%s Rainbow model %s!", CHAT_PREFIX, g_RainbowModelEnabled[client] ? "enabled" : "disabled");
+	return Plugin_Handled;
+}
+
+public Action Timer_SpawnProtection(Handle timer, any data)
+{
+	int client = data;
+	if (client < 1 || client > MaxClients || timer != g_SpawnProtectionTimer[client])
+	{
+		return Plugin_Stop;
+	}
+
+	if (!IsAliveClient(client))
+	{
+		g_SpawnProtectionTimer[client] = null;
+		g_SpawnProtectionTimeLeft[client] = 0;
+		return Plugin_Stop;
+	}
+
+	g_SpawnProtectionTimeLeft[client]--;
+
+	if (g_SpawnProtectionTimeLeft[client] <= 0)
+	{
+		g_SpawnProtectionTimer[client] = null;
+		FinishSpawnProtection(client, true, true);
+		return Plugin_Stop;
+	}
+
+	SetClientRenderColor(client, g_ProtectedColor);
+	ShowSpawnProtectionCountdown(client);
+	return Plugin_Continue;
+}
+
+public Action Timer_RainbowColor(Handle timer, any data)
+{
+	int client = data;
+	if (client < 1 || client > MaxClients || timer != g_RainbowTimer[client] || !g_RainbowModelEnabled[client] || !IsAliveClient(client))
+	{
+		if (client >= 1 && client <= MaxClients && g_RainbowTimer[client] == timer)
+		{
+			g_RainbowTimer[client] = null;
+		}
+
+		return Plugin_Stop;
+	}
+
+	int color[4];
+	GetRainbowColor(client, 0.3, color);
+	SetClientRenderColor(client, color);
+	return Plugin_Continue;
+}
+
+public Action OnTraceAttack(int victim, int &attacker, int &inflictor, float &damage, int &damageType, int &ammoType, int hitbox, int hitgroup)
+{
+	if (!IsAliveClient(victim) || attacker == victim || !IsAliveClient(attacker))
+	{
+		return Plugin_Continue;
+	}
+
+	if (IsWarmupActive() || g_SpawnProtectionTimeLeft[attacker] > 0)
+	{
+		return Plugin_Handled;
+	}
+
+	return Plugin_Continue;
+}
+
+void RefreshSettings()
+{
+	g_SpawnProtectionDuration = g_CvarSpawnProtectionTime.IntValue;
+	g_RainbowHudEnabled = g_CvarRainbowHud.BoolValue;
+	g_BotControlEnabled = g_CvarBotControl.BoolValue;
+	g_NotifyEnabled = g_CvarNotifyStart.BoolValue;
+	g_FfaColorsEnabled = g_CvarFfaMode.BoolValue;
+	g_ColorModelsEnabled = g_CvarColorModels.BoolValue;
+	g_EndOnAttackEnabled = g_CvarEndOnAttack.BoolValue;
+}
+
+void ResetAllSpawnProtection()
+{
+	for (int client = 1; client <= MaxClients; client++)
+	{
+		if (!IsClientInGame(client))
+		{
+			continue;
+		}
+
+		DisableSpawnProtection(client, false, false);
+	}
+}
+
+void DisableSpawnProtection(int client, bool notifyClient, bool showHudNotice)
+{
+	StopSpawnProtectionTimer(client);
+	FinishSpawnProtection(client, notifyClient, showHudNotice);
+}
+
+void FinishSpawnProtection(int client, bool notifyClient, bool showHudNotice)
+{
+	g_SpawnProtectionTimeLeft[client] = 0;
+
+	if (!IsValidClient(client))
+	{
+		return;
+	}
+
+	SetEntProp(client, Prop_Data, "m_takedamage", DAMAGE_YES, 1);
+	ApplyUnprotectedColor(client);
+
+	if (showHudNotice)
+	{
+		SetSpawnProtectionHudStyle(client);
+		ShowSyncHudText(client, g_HudText, "SPAWN PROTECTION\nis now off!");
+	}
+	else
+	{
+		ClearSyncHud(client, g_HudText);
+	}
+
+	if (notifyClient && g_NotifyEnabled)
+	{
+		PrintToChat(client, "%s Spawn protection is now \x07OFF.", CHAT_PREFIX);
+	}
+}
+
+void StopSpawnProtectionTimer(int client)
+{
+	if (client < 1 || client > MaxClients)
+	{
+		return;
+	}
+
+	if (g_SpawnProtectionTimer[client] != null)
+	{
+		delete g_SpawnProtectionTimer[client];
+		g_SpawnProtectionTimer[client] = null;
+	}
+}
+
+void StopRainbowTimer(int client)
+{
+	if (client < 1 || client > MaxClients)
+	{
+		return;
+	}
+
+	if (g_RainbowTimer[client] != null)
+	{
+		delete g_RainbowTimer[client];
+		g_RainbowTimer[client] = null;
+	}
+}
+
+void EnsureRainbowTimer(int client)
+{
+	if (!g_RainbowModelEnabled[client] || !IsAliveClient(client) || g_RainbowTimer[client] != null)
+	{
+		return;
+	}
+
+	g_RainbowTimer[client] = CreateTimer(0.1, Timer_RainbowColor, client, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
+}
+
+void ShowSpawnProtectionCountdown(int client)
+{
+	SetSpawnProtectionHudStyle(client);
+	ShowSyncHudText(client, g_HudText, "SPAWN PROTECTION\n%d seconds left", g_SpawnProtectionTimeLeft[client]);
+}
+
+void SetSpawnProtectionHudStyle(int client)
+{
+	int color[4];
+
+	if (g_RainbowHudEnabled)
+	{
+		GetRainbowColor(client, 0.2, color);
+	}
+	else
+	{
+		color = g_DefaultColor;
+		color[0] = 0;
+		color[1] = 255;
+		color[2] = 0;
+	}
+
+	SetHudTextParams(-1.0, 0.1, 1.1, color[0], color[1], color[2], color[3], 0, 0.1, 0.1, 0.1);
+}
+
+void ApplyUnprotectedColor(int client)
+{
+	if (!IsValidClient(client))
+	{
+		return;
+	}
+
+	if (!g_ColorModelsEnabled)
+	{
+		SetClientRenderColor(client, g_DefaultColor);
+		return;
+	}
+
+	if (g_FfaColorsEnabled)
+	{
+		SetClientRenderColor(client, g_UnprotectedColorFFA);
+		return;
+	}
+
+	switch (GetClientTeam(client))
+	{
+		case CS_TEAM_T:
+		{
+			SetClientRenderColor(client, g_UnprotectedColorT);
+		}
+		case CS_TEAM_CT:
+		{
+			SetClientRenderColor(client, g_UnprotectedColorCT);
+		}
+		default:
+		{
+			SetClientRenderColor(client, g_DefaultColor);
+		}
+	}
+}
+
+void SetClientRenderColor(int client, const int color[4])
+{
+	if (!IsValidClient(client))
+	{
+		return;
+	}
+
+	SetEntityRenderMode(client, RENDER_TRANSALPHA);
+	SetEntityRenderColor(client, color[0], color[1], color[2], color[3]);
+}
+
+void GetRainbowColor(int client, float rate, int color[4])
+{
+	float gameTime = GetGameTime() * rate + float(client);
+
+	color[0] = RoundToNearest(Cosine(gameTime + 0.0) * 127.5 + 127.5);
+	color[1] = RoundToNearest(Cosine(gameTime + 2.0) * 127.5 + 127.5);
+	color[2] = RoundToNearest(Cosine(gameTime + 4.0) * 127.5 + 127.5);
+	color[3] = 255;
+}
+
+bool IsPlayerControllingBot(int client)
+{
+	if (g_IsControllingBotOffset < 0 || !IsValidClient(client))
+	{
+		return false;
+	}
+
+	return view_as<bool>(GetEntData(client, g_IsControllingBotOffset, 1));
+}
+
+bool IsWarmupActive()
+{
+	return GameRules_GetProp("m_bWarmupPeriod") != 0;
+}
+
+bool IsValidClient(int client)
+{
+	return client >= 1 && client <= MaxClients && IsClientInGame(client);
+}
+
+bool IsAliveClient(int client)
+{
+	return IsValidClient(client) && IsPlayerAlive(client);
 }
