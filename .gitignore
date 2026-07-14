@@ -1,0 +1,6 @@
+# Local operating-system metadata
+[Dd]esktop.ini
+.DS_Store
+
+# SourcePawn binaries accidentally compiled beside source files
+/addons/sourcemod/scripting/*.smx

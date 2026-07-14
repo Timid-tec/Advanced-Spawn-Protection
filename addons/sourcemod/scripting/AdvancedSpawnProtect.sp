@@ -7,7 +7,7 @@
 #include <cstrike>
 #include <sdkhooks>
 
-#define PLUGIN_VERSION "4.2.7"
+#define PLUGIN_VERSION "4.3.0"
 #define CHAT_PREFIX "\x08[\x0CSpawn Protect\x08]"
 #define DAMAGE_NO 0
 #define DAMAGE_YES 2
@@ -26,16 +26,18 @@ static const int g_UnprotectedColorFFA[4] = {255, 0, 0, 255};
 static const int g_UnprotectedColorT[4] = {255, 0, 0, 255};
 static const int g_UnprotectedColorCT[4] = {0, 0, 255, 255};
 static const int g_DefaultColor[4] = {255, 255, 255, 255};
+static const int g_HudColor[4] = {235, 248, 255, 255};
+static const int g_HudShadowColor[4] = {0, 0, 0, 245};
 
 Handle g_SpawnProtectionTimer[MAXPLAYERS + 1];
 Handle g_RainbowTimer[MAXPLAYERS + 1];
 Handle g_HudText = null;
+Handle g_HudTextShadow = null;
 
 bool g_RainbowModelEnabled[MAXPLAYERS + 1];
 int g_SpawnProtectionTimeLeft[MAXPLAYERS + 1];
 
 ConVar g_CvarSpawnProtectionTime = null;
-ConVar g_CvarRainbowHud = null;
 ConVar g_CvarBotControl = null;
 ConVar g_CvarNotifyStart = null;
 ConVar g_CvarFfaMode = null;
@@ -46,7 +48,6 @@ ConVar g_CvarDisableImmunityAlpha = null;
 int g_SpawnProtectionDuration = 0;
 int g_IsControllingBotOffset = -1;
 
-bool g_RainbowHudEnabled = true;
 bool g_BotControlEnabled = false;
 bool g_NotifyEnabled = true;
 bool g_FfaColorsEnabled = true;
@@ -56,7 +57,7 @@ bool g_EndOnAttackEnabled = true;
 public void OnPluginStart()
 {
 	g_CvarSpawnProtectionTime = CreateConVar("sm_spawnprotect_time", "12", "Seconds of spawn protection after a player spawns.", FCVAR_NONE, true, 0.0, true, 60.0);
-	g_CvarRainbowHud = CreateConVar("sm_spawnprotect_rainbowhud", "1", "Use rainbow HUD colors for the spawn protection message.", FCVAR_NONE, true, 0.0, true, 1.0);
+	CreateConVar("sm_spawnprotect_rainbowhud", "0", "Deprecated compatibility setting. The HUD now uses the fixed Eclipse color.", FCVAR_NONE, true, 0.0, true, 1.0);
 	g_CvarBotControl = CreateConVar("sm_spawnprotect_botcontrol", "0", "Whether a player controlling a bot should still receive spawn protection.", FCVAR_NONE, true, 0.0, true, 1.0);
 	g_CvarNotifyStart = CreateConVar("sm_spawnprotect_notifystart", "1", "Print chat messages when spawn protection starts or ends.", FCVAR_NONE, true, 0.0, true, 1.0);
 	g_CvarFfaMode = CreateConVar("sm_spawnprotect_ffamode", "1", "Use FFA colors instead of separate team colors for unprotected players.", FCVAR_NONE, true, 0.0, true, 1.0);
@@ -64,7 +65,6 @@ public void OnPluginStart()
 	g_CvarEndOnAttack = CreateConVar("sm_spawnprotect_endonattack", "1", "End spawn protection as soon as the protected player fires.", FCVAR_NONE, true, 0.0, true, 1.0);
 
 	g_CvarSpawnProtectionTime.AddChangeHook(OnConVarChanged);
-	g_CvarRainbowHud.AddChangeHook(OnConVarChanged);
 	g_CvarBotControl.AddChangeHook(OnConVarChanged);
 	g_CvarNotifyStart.AddChangeHook(OnConVarChanged);
 	g_CvarFfaMode.AddChangeHook(OnConVarChanged);
@@ -89,6 +89,7 @@ public void OnPluginStart()
 
 	g_IsControllingBotOffset = FindSendPropInfo("CCSPlayer", "m_bIsControllingBot");
 	g_HudText = CreateHudSynchronizer();
+	g_HudTextShadow = CreateHudSynchronizer();
 
 	RefreshSettings();
 
@@ -174,7 +175,7 @@ public void Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast
 	}
 
 	SetEntProp(client, Prop_Data, "m_takedamage", DAMAGE_NO, 1);
-	g_SpawnProtectionTimeLeft[client] = g_SpawnProtectionDuration;
+	g_SpawnProtectionTimeLeft[client] = RoundToCeil(GetSpawnProtectionTimeRemaining());
 
 	SetClientRenderColor(client, g_ProtectedColor);
 	ShowSpawnProtectionCountdown(client);
@@ -311,7 +312,6 @@ public Action OnTraceAttack(int victim, int &attacker, int &inflictor, float &da
 void RefreshSettings()
 {
 	g_SpawnProtectionDuration = g_CvarSpawnProtectionTime.IntValue;
-	g_RainbowHudEnabled = g_CvarRainbowHud.BoolValue;
 	g_BotControlEnabled = g_CvarBotControl.BoolValue;
 	g_NotifyEnabled = g_CvarNotifyStart.BoolValue;
 	g_FfaColorsEnabled = g_CvarFfaMode.BoolValue;
@@ -352,12 +352,11 @@ void FinishSpawnProtection(int client, bool notifyClient, bool showHudNotice)
 
 	if (showHudNotice)
 	{
-		SetSpawnProtectionHudStyle(client);
-		ShowSyncHudText(client, g_HudText, "SPAWN PROTECTION\nis now off!");
+		ShowSpawnProtectionEndNotice(client);
 	}
 	else
 	{
-		ClearSyncHud(client, g_HudText);
+		ClearSpawnProtectionHud(client);
 	}
 
 	if (notifyClient && g_NotifyEnabled)
@@ -406,27 +405,43 @@ void EnsureRainbowTimer(int client)
 
 void ShowSpawnProtectionCountdown(int client)
 {
-	SetSpawnProtectionHudStyle(client);
+	SetSpawnProtectionHudShadowStyle();
+	ShowSyncHudText(client, g_HudTextShadow, "SPAWN PROTECTION\n%d seconds left", g_SpawnProtectionTimeLeft[client]);
+
+	SetSpawnProtectionHudStyle();
 	ShowSyncHudText(client, g_HudText, "SPAWN PROTECTION\n%d seconds left", g_SpawnProtectionTimeLeft[client]);
 }
 
-void SetSpawnProtectionHudStyle(int client)
+void ShowSpawnProtectionEndNotice(int client)
 {
-	int color[4];
+	SetSpawnProtectionHudShadowStyle();
+	ShowSyncHudText(client, g_HudTextShadow, "SPAWN PROTECTION\nis now off!");
 
-	if (g_RainbowHudEnabled)
+	SetSpawnProtectionHudStyle();
+	ShowSyncHudText(client, g_HudText, "SPAWN PROTECTION\nis now off!");
+}
+
+void SetSpawnProtectionHudStyle()
+{
+	SetHudTextParams(-1.0, 0.1, 1.1, g_HudColor[0], g_HudColor[1], g_HudColor[2], g_HudColor[3], 0, 0.1, 0.1, 0.1);
+}
+
+void SetSpawnProtectionHudShadowStyle()
+{
+	SetHudTextParams(-1.0, 0.103, 1.1, g_HudShadowColor[0], g_HudShadowColor[1], g_HudShadowColor[2], g_HudShadowColor[3], 0, 0.1, 0.1, 0.1);
+}
+
+void ClearSpawnProtectionHud(int client)
+{
+	if (g_HudText != null)
 	{
-		GetRainbowColor(client, 0.2, color);
-	}
-	else
-	{
-		color = g_DefaultColor;
-		color[0] = 0;
-		color[1] = 255;
-		color[2] = 0;
+		ClearSyncHud(client, g_HudText);
 	}
 
-	SetHudTextParams(-1.0, 0.1, 1.1, color[0], color[1], color[2], color[3], 0, 0.1, 0.1, 0.1);
+	if (g_HudTextShadow != null)
+	{
+		ClearSyncHud(client, g_HudTextShadow);
+	}
 }
 
 void ApplyUnprotectedColor(int client)
@@ -499,6 +514,18 @@ bool IsPlayerControllingBot(int client)
 bool IsWarmupActive()
 {
 	return GameRules_GetProp("m_bWarmupPeriod") != 0;
+}
+
+float GetSpawnProtectionTimeRemaining()
+{
+	float remaining = float(g_SpawnProtectionDuration);
+	float roundStartDelta = GameRules_GetPropFloat("m_fRoundStartTime") - GetGameTime();
+	if (roundStartDelta > 0.0)
+	{
+		remaining += roundStartDelta;
+	}
+
+	return remaining > 0.0 ? remaining : 0.0;
 }
 
 bool IsValidClient(int client)
