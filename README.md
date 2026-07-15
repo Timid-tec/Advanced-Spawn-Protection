@@ -2,7 +2,7 @@
 
 Advanced Spawn Protection is a SourceMod plugin for CS:GO servers. It gives newly spawned players temporary damage immunity, clearly shows the remaining protection time, and can end protection when the player attacks.
 
-Current version: **4.4.0**
+Current version: **4.4.1**
 
 [Download the latest Advanced Spawn Protection release](https://github.com/Timid-tec/Advanced-Spawn-Protection/releases/latest/download/Advanced-Spawn-Protection.zip)
 
@@ -18,7 +18,7 @@ Current version: **4.4.0**
 - Optional chat notifications when protection starts and ends.
 - Optional protection removal when the protected player fires.
 - Optional handling for players controlling bots.
-- FFA or team-based player model colors.
+- Optional FFA or team-based player model colors, disabled by default.
 - Separate optional rainbow player-model effect through `sm_rainbow`.
 
 ## Requirements
@@ -43,7 +43,7 @@ This plugin is for CS:GO and is not a Counter-Strike 2 plugin.
 2. Replace `csgo/addons/sourcemod/plugins/AdvancedSpawnProtect.smx` with the new file from the ZIP.
 3. Compare your existing configuration with the new `cfg/sourcemod/AdvancedSpawnProtect.cfg`. SourceMod does not automatically replace an existing config file.
 4. Restart the server or run `sm plugins reload AdvancedSpawnProtect` from the server console.
-5. Run `sm plugins list` and confirm that Advanced Spawn Protection reports version `4.4.0`.
+5. Run `sm plugins list` and confirm that Advanced Spawn Protection reports version `4.4.1`.
 
 ## Configuration
 
@@ -53,7 +53,7 @@ This plugin is for CS:GO and is not a Counter-Strike 2 plugin.
 | `sm_spawnprotect_botcontrol` | `0` | Allow spawn protection while a player is controlling a bot. |
 | `sm_spawnprotect_notifystart` | `1` | Show chat messages when protection starts or ends. |
 | `sm_spawnprotect_ffamode` | `1` | Use FFA model colors instead of separate team colors. |
-| `sm_spawnprotect_colormodels` | `1` | Color player models based on protection state. |
+| `sm_spawnprotect_colormodels` | `0` | Color unprotected player models; disabled by default so HUD warnings do not coincide with red models. |
 | `sm_spawnprotect_endonattack` | `1` | End protection when the protected player fires. |
 | `sm_spawnprotect_rainbowhud` | `0` | Deprecated compatibility setting. The HUD uses configurable fixed colors. |
 | `sm_spawnprotect_hud_shadow` | `1` | Draw a dark shadow behind the HUD. |
@@ -70,6 +70,12 @@ This plugin is for CS:GO and is not a Counter-Strike 2 plugin.
 | `sm_spawnprotect_hud_warning_blue` | `110` | Blue component of the warning HUD color. |
 
 Boolean options use `0` for disabled and `1` for enabled. RGB components accept values from `0` through `255`.
+
+## Version 4.4.1
+
+- Disabled unprotected player-model coloring by default.
+- Kept the light-red three-second warning limited to the HUD layers.
+- Player models now return to their normal color when protection expires with the default config.
 
 ## Version 4.4.0
 

@@ -7,7 +7,7 @@
 #include <cstrike>
 #include <sdkhooks>
 
-#define PLUGIN_VERSION "4.4.0"
+#define PLUGIN_VERSION "4.4.1"
 #define CHAT_PREFIX "\x08[\x0CSpawn Protect\x08]"
 #define DAMAGE_NO 0
 #define DAMAGE_YES 2
@@ -65,7 +65,7 @@ int g_IsControllingBotOffset = -1;
 bool g_BotControlEnabled = false;
 bool g_NotifyEnabled = true;
 bool g_FfaColorsEnabled = true;
-bool g_ColorModelsEnabled = true;
+bool g_ColorModelsEnabled = false;
 bool g_EndOnAttackEnabled = true;
 bool g_HudShadowEnabled = true;
 
@@ -82,7 +82,7 @@ public void OnPluginStart()
 	g_CvarBotControl = CreateConVar("sm_spawnprotect_botcontrol", "0", "Whether a player controlling a bot should still receive spawn protection.", FCVAR_NONE, true, 0.0, true, 1.0);
 	g_CvarNotifyStart = CreateConVar("sm_spawnprotect_notifystart", "1", "Print chat messages when spawn protection starts or ends.", FCVAR_NONE, true, 0.0, true, 1.0);
 	g_CvarFfaMode = CreateConVar("sm_spawnprotect_ffamode", "1", "Use FFA colors instead of separate team colors for unprotected players.", FCVAR_NONE, true, 0.0, true, 1.0);
-	g_CvarColorModels = CreateConVar("sm_spawnprotect_colormodels", "1", "Color player models while they are unprotected.", FCVAR_NONE, true, 0.0, true, 1.0);
+	g_CvarColorModels = CreateConVar("sm_spawnprotect_colormodels", "0", "Color player models while they are unprotected.", FCVAR_NONE, true, 0.0, true, 1.0);
 	g_CvarEndOnAttack = CreateConVar("sm_spawnprotect_endonattack", "1", "End spawn protection as soon as the protected player fires.", FCVAR_NONE, true, 0.0, true, 1.0);
 	g_CvarHudShadow = CreateConVar("sm_spawnprotect_hud_shadow", "1", "Draw a dark shadow behind the spawn protection HUD.", FCVAR_NONE, true, 0.0, true, 1.0);
 	g_CvarHudHoldTime = CreateConVar("sm_spawnprotect_hud_holdtime", "1.25", "Seconds each countdown HUD update remains visible. Keep this above 1.0 to prevent gaps.", FCVAR_NONE, true, 0.1, true, 10.0);
