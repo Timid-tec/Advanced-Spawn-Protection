@@ -7,7 +7,7 @@
 #include <cstrike>
 #include <sdkhooks>
 
-#define PLUGIN_VERSION "4.3.0"
+#define PLUGIN_VERSION "4.4.0"
 #define CHAT_PREFIX "\x08[\x0CSpawn Protect\x08]"
 #define DAMAGE_NO 0
 #define DAMAGE_YES 2
@@ -26,8 +26,10 @@ static const int g_UnprotectedColorFFA[4] = {255, 0, 0, 255};
 static const int g_UnprotectedColorT[4] = {255, 0, 0, 255};
 static const int g_UnprotectedColorCT[4] = {0, 0, 255, 255};
 static const int g_DefaultColor[4] = {255, 255, 255, 255};
-static const int g_HudColor[4] = {235, 248, 255, 255};
 static const int g_HudShadowColor[4] = {0, 0, 0, 245};
+
+int g_HudColor[4] = {235, 248, 255, 255};
+int g_HudWarningColor[4] = {255, 120, 110, 255};
 
 Handle g_SpawnProtectionTimer[MAXPLAYERS + 1];
 Handle g_RainbowTimer[MAXPLAYERS + 1];
@@ -43,6 +45,18 @@ ConVar g_CvarNotifyStart = null;
 ConVar g_CvarFfaMode = null;
 ConVar g_CvarColorModels = null;
 ConVar g_CvarEndOnAttack = null;
+ConVar g_CvarHudShadow = null;
+ConVar g_CvarHudHoldTime = null;
+ConVar g_CvarHudWarningTime = null;
+ConVar g_CvarHudWarningFadeOut = null;
+ConVar g_CvarHudEndHoldTime = null;
+ConVar g_CvarHudEndFadeOut = null;
+ConVar g_CvarHudColorRed = null;
+ConVar g_CvarHudColorGreen = null;
+ConVar g_CvarHudColorBlue = null;
+ConVar g_CvarHudWarningRed = null;
+ConVar g_CvarHudWarningGreen = null;
+ConVar g_CvarHudWarningBlue = null;
 ConVar g_CvarDisableImmunityAlpha = null;
 
 int g_SpawnProtectionDuration = 0;
@@ -53,16 +67,35 @@ bool g_NotifyEnabled = true;
 bool g_FfaColorsEnabled = true;
 bool g_ColorModelsEnabled = true;
 bool g_EndOnAttackEnabled = true;
+bool g_HudShadowEnabled = true;
+
+int g_HudWarningTime = 3;
+float g_HudHoldTime = 1.25;
+float g_HudWarningFadeOut = 0.25;
+float g_HudEndHoldTime = 2.5;
+float g_HudEndFadeOut = 0.75;
 
 public void OnPluginStart()
 {
 	g_CvarSpawnProtectionTime = CreateConVar("sm_spawnprotect_time", "12", "Seconds of spawn protection after a player spawns.", FCVAR_NONE, true, 0.0, true, 60.0);
-	CreateConVar("sm_spawnprotect_rainbowhud", "0", "Deprecated compatibility setting. The HUD now uses the fixed Eclipse color.", FCVAR_NONE, true, 0.0, true, 1.0);
+	CreateConVar("sm_spawnprotect_rainbowhud", "0", "Deprecated compatibility setting. The HUD now uses configurable fixed colors.", FCVAR_NONE, true, 0.0, true, 1.0);
 	g_CvarBotControl = CreateConVar("sm_spawnprotect_botcontrol", "0", "Whether a player controlling a bot should still receive spawn protection.", FCVAR_NONE, true, 0.0, true, 1.0);
 	g_CvarNotifyStart = CreateConVar("sm_spawnprotect_notifystart", "1", "Print chat messages when spawn protection starts or ends.", FCVAR_NONE, true, 0.0, true, 1.0);
 	g_CvarFfaMode = CreateConVar("sm_spawnprotect_ffamode", "1", "Use FFA colors instead of separate team colors for unprotected players.", FCVAR_NONE, true, 0.0, true, 1.0);
 	g_CvarColorModels = CreateConVar("sm_spawnprotect_colormodels", "1", "Color player models while they are unprotected.", FCVAR_NONE, true, 0.0, true, 1.0);
 	g_CvarEndOnAttack = CreateConVar("sm_spawnprotect_endonattack", "1", "End spawn protection as soon as the protected player fires.", FCVAR_NONE, true, 0.0, true, 1.0);
+	g_CvarHudShadow = CreateConVar("sm_spawnprotect_hud_shadow", "1", "Draw a dark shadow behind the spawn protection HUD.", FCVAR_NONE, true, 0.0, true, 1.0);
+	g_CvarHudHoldTime = CreateConVar("sm_spawnprotect_hud_holdtime", "1.25", "Seconds each countdown HUD update remains visible. Keep this above 1.0 to prevent gaps.", FCVAR_NONE, true, 0.1, true, 10.0);
+	g_CvarHudWarningTime = CreateConVar("sm_spawnprotect_hud_warning_time", "3", "Seconds remaining when the HUD changes to the warning color. Set to 0 to disable.", FCVAR_NONE, true, 0.0, true, 60.0);
+	g_CvarHudWarningFadeOut = CreateConVar("sm_spawnprotect_hud_warning_fadeout", "0.25", "Fade-out time for warning countdown updates.", FCVAR_NONE, true, 0.0, true, 5.0);
+	g_CvarHudEndHoldTime = CreateConVar("sm_spawnprotect_hud_end_holdtime", "2.5", "Seconds the protection-ended HUD remains visible.", FCVAR_NONE, true, 0.1, true, 10.0);
+	g_CvarHudEndFadeOut = CreateConVar("sm_spawnprotect_hud_end_fadeout", "0.75", "Fade-out time for the protection-ended HUD.", FCVAR_NONE, true, 0.0, true, 5.0);
+	g_CvarHudColorRed = CreateConVar("sm_spawnprotect_hud_color_red", "235", "Red component of the normal HUD color.", FCVAR_NONE, true, 0.0, true, 255.0);
+	g_CvarHudColorGreen = CreateConVar("sm_spawnprotect_hud_color_green", "248", "Green component of the normal HUD color.", FCVAR_NONE, true, 0.0, true, 255.0);
+	g_CvarHudColorBlue = CreateConVar("sm_spawnprotect_hud_color_blue", "255", "Blue component of the normal HUD color.", FCVAR_NONE, true, 0.0, true, 255.0);
+	g_CvarHudWarningRed = CreateConVar("sm_spawnprotect_hud_warning_red", "255", "Red component of the warning HUD color.", FCVAR_NONE, true, 0.0, true, 255.0);
+	g_CvarHudWarningGreen = CreateConVar("sm_spawnprotect_hud_warning_green", "120", "Green component of the warning HUD color.", FCVAR_NONE, true, 0.0, true, 255.0);
+	g_CvarHudWarningBlue = CreateConVar("sm_spawnprotect_hud_warning_blue", "110", "Blue component of the warning HUD color.", FCVAR_NONE, true, 0.0, true, 255.0);
 
 	g_CvarSpawnProtectionTime.AddChangeHook(OnConVarChanged);
 	g_CvarBotControl.AddChangeHook(OnConVarChanged);
@@ -70,6 +103,18 @@ public void OnPluginStart()
 	g_CvarFfaMode.AddChangeHook(OnConVarChanged);
 	g_CvarColorModels.AddChangeHook(OnConVarChanged);
 	g_CvarEndOnAttack.AddChangeHook(OnConVarChanged);
+	g_CvarHudShadow.AddChangeHook(OnConVarChanged);
+	g_CvarHudHoldTime.AddChangeHook(OnConVarChanged);
+	g_CvarHudWarningTime.AddChangeHook(OnConVarChanged);
+	g_CvarHudWarningFadeOut.AddChangeHook(OnConVarChanged);
+	g_CvarHudEndHoldTime.AddChangeHook(OnConVarChanged);
+	g_CvarHudEndFadeOut.AddChangeHook(OnConVarChanged);
+	g_CvarHudColorRed.AddChangeHook(OnConVarChanged);
+	g_CvarHudColorGreen.AddChangeHook(OnConVarChanged);
+	g_CvarHudColorBlue.AddChangeHook(OnConVarChanged);
+	g_CvarHudWarningRed.AddChangeHook(OnConVarChanged);
+	g_CvarHudWarningGreen.AddChangeHook(OnConVarChanged);
+	g_CvarHudWarningBlue.AddChangeHook(OnConVarChanged);
 
 	g_CvarDisableImmunityAlpha = FindConVar("sv_disable_immunity_alpha");
 	if (g_CvarDisableImmunityAlpha != null)
@@ -258,6 +303,10 @@ public Action Timer_SpawnProtection(Handle timer, any data)
 	{
 		g_SpawnProtectionTimer[client] = null;
 		g_SpawnProtectionTimeLeft[client] = 0;
+		if (IsValidClient(client))
+		{
+			ClearSpawnProtectionHud(client);
+		}
 		return Plugin_Stop;
 	}
 
@@ -317,6 +366,21 @@ void RefreshSettings()
 	g_FfaColorsEnabled = g_CvarFfaMode.BoolValue;
 	g_ColorModelsEnabled = g_CvarColorModels.BoolValue;
 	g_EndOnAttackEnabled = g_CvarEndOnAttack.BoolValue;
+	g_HudShadowEnabled = g_CvarHudShadow.BoolValue;
+	g_HudWarningTime = g_CvarHudWarningTime.IntValue;
+	g_HudHoldTime = g_CvarHudHoldTime.FloatValue;
+	g_HudWarningFadeOut = g_CvarHudWarningFadeOut.FloatValue;
+	g_HudEndHoldTime = g_CvarHudEndHoldTime.FloatValue;
+	g_HudEndFadeOut = g_CvarHudEndFadeOut.FloatValue;
+
+	g_HudColor[0] = g_CvarHudColorRed.IntValue;
+	g_HudColor[1] = g_CvarHudColorGreen.IntValue;
+	g_HudColor[2] = g_CvarHudColorBlue.IntValue;
+	g_HudColor[3] = 255;
+	g_HudWarningColor[0] = g_CvarHudWarningRed.IntValue;
+	g_HudWarningColor[1] = g_CvarHudWarningGreen.IntValue;
+	g_HudWarningColor[2] = g_CvarHudWarningBlue.IntValue;
+	g_HudWarningColor[3] = 255;
 }
 
 void ResetAllSpawnProtection()
@@ -405,30 +469,47 @@ void EnsureRainbowTimer(int client)
 
 void ShowSpawnProtectionCountdown(int client)
 {
-	SetSpawnProtectionHudShadowStyle();
-	ShowSyncHudText(client, g_HudTextShadow, "SPAWN PROTECTION\n%d seconds left", g_SpawnProtectionTimeLeft[client]);
+	bool warning = g_HudWarningTime > 0 && g_SpawnProtectionTimeLeft[client] <= g_HudWarningTime;
+	float fadeOut = warning ? g_HudWarningFadeOut : 0.0;
 
-	SetSpawnProtectionHudStyle();
-	ShowSyncHudText(client, g_HudText, "SPAWN PROTECTION\n%d seconds left", g_SpawnProtectionTimeLeft[client]);
+	if (g_HudShadowEnabled)
+	{
+		SetSpawnProtectionHudShadowStyle(g_HudHoldTime, fadeOut);
+		ShowSyncHudText(client, g_HudTextShadow, "Spawn Protection\n%d seconds left", g_SpawnProtectionTimeLeft[client]);
+	}
+	else if (g_HudTextShadow != null)
+	{
+		ClearSyncHud(client, g_HudTextShadow);
+	}
+
+	SetSpawnProtectionHudStyle(warning ? g_HudWarningColor : g_HudColor, g_HudHoldTime, fadeOut);
+	ShowSyncHudText(client, g_HudText, "Spawn Protection\n%d seconds left", g_SpawnProtectionTimeLeft[client]);
 }
 
 void ShowSpawnProtectionEndNotice(int client)
 {
-	SetSpawnProtectionHudShadowStyle();
-	ShowSyncHudText(client, g_HudTextShadow, "SPAWN PROTECTION\nis now off!");
+	if (g_HudShadowEnabled)
+	{
+		SetSpawnProtectionHudShadowStyle(g_HudEndHoldTime, g_HudEndFadeOut);
+		ShowSyncHudText(client, g_HudTextShadow, "Spawn Protection\nis now off!");
+	}
+	else if (g_HudTextShadow != null)
+	{
+		ClearSyncHud(client, g_HudTextShadow);
+	}
 
-	SetSpawnProtectionHudStyle();
-	ShowSyncHudText(client, g_HudText, "SPAWN PROTECTION\nis now off!");
+	SetSpawnProtectionHudStyle(g_HudWarningColor, g_HudEndHoldTime, g_HudEndFadeOut);
+	ShowSyncHudText(client, g_HudText, "Spawn Protection\nis now off!");
 }
 
-void SetSpawnProtectionHudStyle()
+void SetSpawnProtectionHudStyle(const int color[4], float holdTime, float fadeOut)
 {
-	SetHudTextParams(-1.0, 0.1, 1.1, g_HudColor[0], g_HudColor[1], g_HudColor[2], g_HudColor[3], 0, 0.1, 0.1, 0.1);
+	SetHudTextParams(-1.0, 0.1, holdTime, color[0], color[1], color[2], color[3], 0, 0.0, 0.0, fadeOut);
 }
 
-void SetSpawnProtectionHudShadowStyle()
+void SetSpawnProtectionHudShadowStyle(float holdTime, float fadeOut)
 {
-	SetHudTextParams(-1.0, 0.103, 1.1, g_HudShadowColor[0], g_HudShadowColor[1], g_HudShadowColor[2], g_HudShadowColor[3], 0, 0.1, 0.1, 0.1);
+	SetHudTextParams(-1.0, 0.103, holdTime, g_HudShadowColor[0], g_HudShadowColor[1], g_HudShadowColor[2], g_HudShadowColor[3], 0, 0.0, 0.0, fadeOut);
 }
 
 void ClearSpawnProtectionHud(int client)

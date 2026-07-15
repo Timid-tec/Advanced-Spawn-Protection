@@ -2,15 +2,18 @@
 
 Advanced Spawn Protection is a SourceMod plugin for CS:GO servers. It gives newly spawned players temporary damage immunity, clearly shows the remaining protection time, and can end protection when the player attacks.
 
-Current version: **4.3.0**
+Current version: **4.4.0**
 
-[Download Advanced Spawn Protection v4.3.0](https://github.com/Timid-tec/Advanced-Spawn-Protection/releases/latest/download/Advanced-Spawn-Protection.zip)
+[Download the latest Advanced Spawn Protection release](https://github.com/Timid-tec/Advanced-Spawn-Protection/releases/latest/download/Advanced-Spawn-Protection.zip)
 
 ## Features
 
 - Configurable spawn-protection duration.
 - Damage immunity while protection is active.
-- Layered Eclipse-style HUD with a light-blue foreground and dark shadow.
+- Simple layered HUD showing `Spawn Protection` and the remaining seconds.
+- Light-red warning text with a synchronized fade during the final three seconds.
+- Flicker-resistant normal countdown rendering with overlapping hold times and no visibility gap.
+- Configurable HUD colors, warning threshold, fades, hold times, and shadow.
 - Countdown includes any remaining delay before the round officially starts.
 - Optional chat notifications when protection starts and ends.
 - Optional protection removal when the protected player fires.
@@ -40,7 +43,7 @@ This plugin is for CS:GO and is not a Counter-Strike 2 plugin.
 2. Replace `csgo/addons/sourcemod/plugins/AdvancedSpawnProtect.smx` with the new file from the ZIP.
 3. Compare your existing configuration with the new `cfg/sourcemod/AdvancedSpawnProtect.cfg`. SourceMod does not automatically replace an existing config file.
 4. Restart the server or run `sm plugins reload AdvancedSpawnProtect` from the server console.
-5. Run `sm plugins list` and confirm that Advanced Spawn Protection reports version `4.3.0`.
+5. Run `sm plugins list` and confirm that Advanced Spawn Protection reports version `4.4.0`.
 
 ## Configuration
 
@@ -52,9 +55,30 @@ This plugin is for CS:GO and is not a Counter-Strike 2 plugin.
 | `sm_spawnprotect_ffamode` | `1` | Use FFA model colors instead of separate team colors. |
 | `sm_spawnprotect_colormodels` | `1` | Color player models based on protection state. |
 | `sm_spawnprotect_endonattack` | `1` | End protection when the protected player fires. |
-| `sm_spawnprotect_rainbowhud` | `0` | Deprecated compatibility setting. The HUD now uses the fixed Eclipse-style color. |
+| `sm_spawnprotect_rainbowhud` | `0` | Deprecated compatibility setting. The HUD uses configurable fixed colors. |
+| `sm_spawnprotect_hud_shadow` | `1` | Draw a dark shadow behind the HUD. |
+| `sm_spawnprotect_hud_holdtime` | `1.25` | Seconds each countdown update remains visible. Keep above `1.0` to avoid gaps. |
+| `sm_spawnprotect_hud_warning_time` | `3` | Seconds remaining when the HUD changes to its warning color; `0` disables it. |
+| `sm_spawnprotect_hud_warning_fadeout` | `0.25` | Fade-out time for warning countdown updates. |
+| `sm_spawnprotect_hud_end_holdtime` | `2.5` | Seconds the protection-ended notice remains visible. |
+| `sm_spawnprotect_hud_end_fadeout` | `0.75` | Fade-out time for the protection-ended notice. |
+| `sm_spawnprotect_hud_color_red` | `235` | Red component of the normal HUD color. |
+| `sm_spawnprotect_hud_color_green` | `248` | Green component of the normal HUD color. |
+| `sm_spawnprotect_hud_color_blue` | `255` | Blue component of the normal HUD color. |
+| `sm_spawnprotect_hud_warning_red` | `255` | Red component of the warning HUD color. |
+| `sm_spawnprotect_hud_warning_green` | `120` | Green component of the warning HUD color. |
+| `sm_spawnprotect_hud_warning_blue` | `110` | Blue component of the warning HUD color. |
 
-Values of `0` disable an option and values of `1` enable it.
+Boolean options use `0` for disabled and `1` for enabled. RGB components accept values from `0` through `255`.
+
+## Version 4.4.0
+
+- Renamed the in-game title from `SPAWN PROTECTION` to `Spawn Protection`.
+- Kept the HUD focused on the title and remaining seconds.
+- Added light-red warning text and a short fade during the final three seconds.
+- Kept the normal HUD free of recurring fades and extended its hold time beyond the refresh interval to reduce in-game flicker.
+- Added ConVars for HUD colors, warning time, warning fade, ending fade, hold times, and shadow visibility.
+- Updated the shipped config and documentation with every available setting.
 
 ## Version 4.3.0
 
