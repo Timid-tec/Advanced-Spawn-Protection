@@ -1,0 +1,105 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="320" viewBox="0 0 1200 320" role="img" aria-labelledby="title desc">
+  <title id="title">Advanced Spawn Protection</title>
+  <desc id="desc">Animated banner for the Advanced Spawn Protection SourceMod plugin.</desc>
+
+  <defs>
+    <linearGradient id="background" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#07111f"/>
+      <stop offset="0.52" stop-color="#0c2038"/>
+      <stop offset="1" stop-color="#160d24"/>
+    </linearGradient>
+
+    <linearGradient id="titleGradient" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#bcecff"/>
+      <stop offset="0.38" stop-color="#ffffff"/>
+      <stop offset="0.72" stop-color="#8bd8ff"/>
+      <stop offset="1" stop-color="#ff8f84"/>
+      <animate attributeName="x1" values="-0.35;0.35;-0.35" dur="6s" repeatCount="indefinite"/>
+      <animate attributeName="x2" values="0.65;1.35;0.65" dur="6s" repeatCount="indefinite"/>
+    </linearGradient>
+
+    <radialGradient id="shieldGradient" cx="45%" cy="35%" r="75%">
+      <stop offset="0" stop-color="#e9f9ff"/>
+      <stop offset="0.5" stop-color="#79ceff"/>
+      <stop offset="1" stop-color="#2d73ff"/>
+    </radialGradient>
+
+    <pattern id="grid" width="36" height="36" patternUnits="userSpaceOnUse">
+      <path d="M 36 0 L 0 0 0 36" fill="none" stroke="#9bdcff" stroke-width="1" opacity="0.08"/>
+    </pattern>
+
+    <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <filter id="softGlow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="2.5" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <clipPath id="titleReveal">
+      <rect x="292" y="82" width="0" height="88" rx="4">
+        <animate attributeName="width" values="0;830;830;0" keyTimes="0;0.32;0.86;1" dur="7s" repeatCount="indefinite"/>
+      </rect>
+    </clipPath>
+  </defs>
+
+  <rect width="1200" height="320" rx="24" fill="url(#background)"/>
+  <rect width="1200" height="320" rx="24" fill="url(#grid)"/>
+  <rect x="1.5" y="1.5" width="1197" height="317" rx="22.5" fill="none" stroke="#8bd8ff" stroke-width="3" opacity="0.22"/>
+
+  <circle cx="1060" cy="50" r="180" fill="#7b4dff" opacity="0.08">
+    <animate attributeName="r" values="150;205;150" dur="8s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="120" cy="300" r="190" fill="#3ec8ff" opacity="0.08">
+    <animate attributeName="r" values="175;220;175" dur="9s" repeatCount="indefinite"/>
+  </circle>
+
+  <g transform="translate(58 42)">
+    <circle cx="112" cy="116" r="94" fill="#07111f" stroke="#7ed7ff" stroke-width="2" opacity="0.95"/>
+    <circle cx="112" cy="116" r="104" fill="none" stroke="#7ed7ff" stroke-width="2" stroke-dasharray="12 12" opacity="0.38">
+      <animateTransform attributeName="transform" type="rotate" from="0 112 116" to="360 112 116" dur="18s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="112" cy="116" r="84" fill="none" stroke="#ff8f84" stroke-width="2" stroke-dasharray="2 13" opacity="0.38">
+      <animateTransform attributeName="transform" type="rotate" from="360 112 116" to="0 112 116" dur="12s" repeatCount="indefinite"/>
+    </circle>
+
+    <path d="M112 48 170 69v47c0 43-24 77-58 91-34-14-58-48-58-91V69z" fill="url(#shieldGradient)" filter="url(#glow)" opacity="0.96">
+      <animate attributeName="opacity" values="0.82;1;0.82" dur="2.8s" repeatCount="indefinite"/>
+    </path>
+    <path d="M112 65 153 80v36c0 31-16 57-41 70-25-13-41-39-41-70V80z" fill="#0b1930" opacity="0.88"/>
+    <path d="m88 117 17 17 34-39" fill="none" stroke="#dcf7ff" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" filter="url(#softGlow)"/>
+  </g>
+
+  <g font-family="Segoe UI, Inter, system-ui, sans-serif">
+    <text x="294" y="78" fill="#8bd8ff" font-size="18" font-weight="700" letter-spacing="5">SOURCEMOD  •  CS:GO</text>
+
+    <text x="290" y="151" fill="#ccefff" opacity="0.13" font-size="51" font-weight="800" letter-spacing="1.2">ADVANCED SPAWN PROTECTION</text>
+    <g clip-path="url(#titleReveal)">
+      <text x="290" y="151" fill="url(#titleGradient)" font-size="51" font-weight="800" letter-spacing="1.2" filter="url(#softGlow)">ADVANCED SPAWN PROTECTION</text>
+    </g>
+
+    <text x="294" y="196" fill="#d8e8f5" font-size="22" font-weight="500" letter-spacing="1.5" opacity="0.9">Spawn safely. Fight confidently.</text>
+    <text x="294" y="239" fill="#88a9c4" font-size="16" letter-spacing="1">CONFIGURABLE IMMUNITY  •  SYNCHRONIZED HUD  •  FLICKER-RESISTANT COUNTDOWN</text>
+
+    <g transform="translate(1010 217)">
+      <rect width="126" height="54" rx="27" fill="#081725" stroke="#ff8f84" stroke-width="2" opacity="0.95"/>
+      <circle cx="27" cy="27" r="7" fill="#ff8f84" filter="url(#softGlow)">
+        <animate attributeName="opacity" values="1;0.28;1" dur="1.2s" repeatCount="indefinite"/>
+      </circle>
+      <text x="48" y="34" fill="#ffd5d1" font-size="19" font-weight="700">3 SEC</text>
+    </g>
+  </g>
+
+  <rect x="286" y="263" width="686" height="3" rx="1.5" fill="#223d55"/>
+  <rect x="286" y="263" width="0" height="3" rx="1.5" fill="#8bd8ff" filter="url(#softGlow)">
+    <animate attributeName="width" values="0;686;686;0" keyTimes="0;0.7;0.88;1" dur="7s" repeatCount="indefinite"/>
+  </rect>
+</svg>

@@ -1,3 +1,6 @@
+// Advanced Spawn Protection
+// Source: https://github.com/Timid-tec/Advanced-Spawn-Protection
+
 #pragma semicolon 1
 #pragma newdecls required
 

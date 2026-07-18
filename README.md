@@ -1,4 +1,12 @@
-# Advanced Spawn Protection
+<p align="center">
+  <img src=".github/assets/advanced-spawn-protection-banner.svg" alt="Advanced Spawn Protection - configurable SourceMod spawn protection for CS:GO" width="100%">
+</p>
+
+<p align="center">
+  <a href="https://github.com/Timid-tec/Advanced-Spawn-Protection/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/Timid-tec/Advanced-Spawn-Protection?style=for-the-badge&amp;color=65c8ff"></a>
+  <a href="https://github.com/Timid-tec/Advanced-Spawn-Protection/releases/latest/download/Advanced-Spawn-Protection.zip"><img alt="Download plugin" src="https://img.shields.io/badge/Download-Plugin-ff8f84?style=for-the-badge&amp;logo=github"></a>
+  <a href="./LICENSE"><img alt="License" src="https://img.shields.io/github/license/Timid-tec/Advanced-Spawn-Protection?style=for-the-badge&amp;color=8b9cff"></a>
+</p>
 
 Advanced Spawn Protection is a SourceMod plugin for CS:GO servers. It gives newly spawned players temporary damage immunity, clearly shows the remaining protection time, and can end protection when the player attacks.
 
@@ -96,7 +104,25 @@ Boolean options use `0` for disabled and `1` for enabled. RGB components accept 
 
 ## Building from source
 
-Compile `addons/sourcemod/scripting/AdvancedSpawnProtect.sp` with a SourceMod 1.11 or newer compiler. Place the generated binary at `addons/sourcemod/plugins/AdvancedSpawnProtect.smx`.
+Compile `addons/sourcemod/scripting/AdvancedSpawnProtection.sp` with a SourceMod 1.11 or newer compiler. Place the generated binary at `addons/sourcemod/plugins/AdvancedSpawnProtect.smx`.
+
+The source uses the plugin's full name. The deployed binary and config retain their established `AdvancedSpawnProtect` names so existing servers can update without creating duplicate plugin or configuration files.
+
+## Repository layout
+
+```text
+addons/
+`-- sourcemod/
+    |-- plugins/
+    |   `-- AdvancedSpawnProtect.smx
+    `-- scripting/
+        `-- AdvancedSpawnProtection.sp
+cfg/
+`-- sourcemod/
+    `-- AdvancedSpawnProtect.cfg
+```
+
+Downloadable ZIP archives are published on the [GitHub Releases page](https://github.com/Timid-tec/Advanced-Spawn-Protection/releases) instead of being duplicated in the repository root.
 
 ## License
 

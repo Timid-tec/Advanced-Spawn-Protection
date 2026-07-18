@@ -4,3 +4,6 @@
 
 # SourcePawn binaries accidentally compiled beside source files
 /addons/sourcemod/scripting/*.smx
+
+# Release archives belong on the GitHub Releases page
+/Advanced-Spawn-Protection.zip
